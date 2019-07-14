@@ -23,6 +23,18 @@ if not war3_exe is None:
 print('Source dir path:\n  ' + src_dir)
 print('Destination dir path:\n  ' + dst_dir)
 
+# Copy non-lua files.
+for (root, subdir, dir_files) in os.walk(src_dir):
+    rel_root = root[len(src_dir) + 1:]
+    for f_name in dir_files:
+        if f_name.endswith('.lua'):
+            continue
+        dst = os.path.join(dst_dir, rel_root)
+        if not os.path.exists(dst):
+            os.mkdir(dst)
+        shutil.copyfile(os.path.join(root, f_name), os.path.join(dst_dir, rel_root, f_name))
+
+
 file_list, content_list = pm.get_contents('war3map.lua', src_dir)
 
 print('\nUsed files:')
@@ -35,20 +47,10 @@ for i, file_path in enumerate(file_list):
 full_content = pm.link_content(content_list)
 pm.add_extension_functions(file_list, content_list)
 
-pm.compiletime_execution(full_content, src_dir)
+pm.compiletime_execution(full_content, src_dir, dst_dir)
 
 if not os.path.exists(dst_dir):
     os.mkdir(dst_dir)
 
 with open(os.path.join(dst_dir, 'war3map.lua'), 'w') as file:
     file.write(ats.node_to_str(full_content))
-
-for (root, subdir, dir_files) in os.walk(src_dir):
-    rel_root = root[len(src_dir) + 1:]
-    for f_name in dir_files:
-        if f_name.endswith('.lua'):
-            continue
-        dst = os.path.join(dst_dir, rel_root)
-        if not os.path.exists(dst):
-            os.mkdir(dst)
-        shutil.copyfile(os.path.join(root, f_name), os.path.join(dst_dir, rel_root, f_name))

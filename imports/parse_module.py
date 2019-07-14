@@ -76,10 +76,12 @@ def fix_content_return(file_path, content):
             content.body.body.append(func)
 
 
-def compiletime_execution(content, src_path):
+def compiletime_execution(content, src_path, dst_path):
     # Run module to get compiletime results list.
     lua = cl.init_lua(src_path)
     compiletime_tree = ast.parse(lua_code.LUA_COMPILETIME)
+    cl.execute(lua, '__src_dir = \'' + src_path.replace('\\', '\\\\') + '\'')
+    cl.execute(lua, '__dst_dir = \'' + dst_path.replace('\\', '\\\\') + '\'')
     cl.execute(lua, ats.node_to_str(compiletime_tree))
     cl.execute(lua, ats.node_to_str(content))
 
