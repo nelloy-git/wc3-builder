@@ -5,6 +5,7 @@
 
 import os
 import sys
+import shutil
 
 import imports.parse_module as pm
 import imports.ast_to_string as ats
@@ -34,44 +35,20 @@ for i, file_path in enumerate(file_list):
 full_content = pm.link_content(content_list)
 pm.add_extension_functions(file_list, content_list)
 
-#with open(os.path.join(dst_dir, 'before_compiletime_war3map.lua'), 'w') as file:
-#    file.write(ats.node_to_str(full_content))
-
-#print('\nCompiletime output:')
 pm.compiletime_execution(full_content, src_dir)
+
+if not os.path.exists(dst_dir):
+    os.mkdir(dst_dir)
 
 with open(os.path.join(dst_dir, 'war3map.lua'), 'w') as file:
     file.write(ats.node_to_str(full_content))
-    
-map_files = [
-    'war3map.lua',
-    'war3map.doo',
-    'war3map.mmp',
-    'war3map.shd',
-    'war3map.w3c',
-    'war3map.w3e',
-    'war3map.w3i',
-    'war3map.w3r',
-    'war3map.wct',
-    'war3map.wpm',
-    'war3map.wtg',
-    'war3map.wts',
-    'war3mapMap.blp',
-    'war3mapUnits.doo',
-]
 
-map_folders = [
-    'war3mapImported'
-]
-
-#input("Press Enter to continue...")
-#path = build_dir + '/map.w3x'
-#subprocess.run(['./MPQEditor.exe', 'new', path])
-#for f in map_files:
-#    subprocess.run(['./MPQEditor.exe', 'add', path, build_dir + '/' + f, f, ' /auto'])
-#for folder in map_folders:
-#    subprocess.run('./MPQEditor.exe' + ' add ' + path + ' ' + build_dir + '/' + folder + ' ' + folder + ' /auto')
-
-#war3_exe = 'C:\\Program Files\\Warcraft III\\x86_64\\Warcraft III.exe'
-#print(os.getcwd() + '\\build\\map.w3x')
-#subprocess.call(war3_exe + ' -loadfile ' + os.getcwd() + '\\' + path)
+for (root, subdir, dir_files) in os.walk(src_dir):
+    rel_root = root[len(src_dir) + 1:]
+    for f_name in dir_files:
+        if f_name.endswith('.lua'):
+            continue
+        dst = os.path.join(dst_dir, rel_root)
+        if not os.path.exists(dst):
+            os.mkdir(dst)
+        shutil.copyfile(os.path.join(root, f_name), os.path.join(dst_dir, rel_root, f_name))
