@@ -76,26 +76,34 @@ def fix_content_return(file_path, content):
             content.body.body.append(func)
 
 
-def compiletime_execution(content, src_path, dst_path):
-    # Run module to get compiletime results list.
+def compiletime_execution(main_path, src_path, dst_path):
+    # Register compiletime vars and funcs.
     lua = cl.init_lua(src_path)
-    compiletime_tree = ast.parse(lua_code.LUA_COMPILETIME)
-    cl.execute(lua, '__src_dir = \'' + src_path.replace('\\', '\\\\') + '\'')
-    cl.execute(lua, '__dst_dir = \'' + dst_path.replace('\\', '\\\\') + '\'')
-    cl.execute(lua, ats.node_to_str(compiletime_tree))
-    cl.execute(lua, ats.node_to_str(content))
+    cl.execute(lua, '__src_dir = \'' + src_path + '\'')
+    cl.execute(lua, '__dst_dir = \'' + dst_path + '\'')
+    cl.execute(lua, lua_code.LUA_COMPILETIME)
+
+    # Run main file.
+    full_src_path = os.path.join(src_path, main_path)
+    with open(full_src_path, 'r') as file:
+        main_content = file.read()
+    cl.execute(lua, main_content)
+
+    for k in lua.globals().require_list:
+        print(lua.globals().require_list[k])
+    
 
     # Get compiletime results.
-    tree_visitor = ast.WalkVisitor()
-    tree_visitor.visit(content)
-    num = 0
-    for node in tree_visitor.nodes:
-        if isinstance(node, ast.Call) and ats.node_to_str(node.func) == 'compiletime':
-            #val = cl.eval(lua, ats.node_to_str(ast.Block(node.args)))
-            num += 1
-            val = cl.get_compile_res(lua, num)
-            find_node.change_node(content, node, val)
-            #print(ats.node_to_str(val))
+    #tree_visitor = ast.WalkVisitor()
+    #tree_visitor.visit(content)
+    #num = 0
+    #for node in tree_visitor.nodes:
+    #    if isinstance(node, ast.Call) and ats.node_to_str(node.func) == 'compiletime':
+    #        #val = cl.eval(lua, ats.node_to_str(ast.Block(node.args)))
+    #        num += 1
+    #        val = cl.get_compile_res(lua, num)
+    #        find_node.change_node(content, node, val)
+    #        #print(ats.node_to_str(val))
     #print('\n\n')
     #print(ats.node_to_str(content))
 

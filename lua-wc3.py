@@ -3,13 +3,14 @@
 ''' Some info
 '''
 
+
 import os
 import sys
+print(sys.version)
 import shutil
 
 import imports.parse_module as pm
 import imports.ast_to_string as ats
-
 
 src_dir = sys.argv[1]
 dst_dir = sys.argv[2]
@@ -34,23 +35,25 @@ for (root, subdir, dir_files) in os.walk(src_dir):
             os.mkdir(dst)
         shutil.copyfile(os.path.join(root, f_name), os.path.join(dst_dir, rel_root, f_name))
 
+pm.compiletime_execution('war3map.lua', src_dir, dst_dir)
 
-file_list, content_list = pm.get_contents('war3map.lua', src_dir)
-
-print('\nUsed files:')
-for f in file_list:
-    print('  ' + f)
-
-for i, file_path in enumerate(file_list):
-    content_list[i] = pm.content_to_function(file_path, content_list[i])
-
-full_content = pm.link_content(content_list)
-pm.add_extension_functions(file_list, content_list)
-
-pm.compiletime_execution(full_content, src_dir, dst_dir)
-
-if not os.path.exists(dst_dir):
-    os.mkdir(dst_dir)
-
-with open(os.path.join(dst_dir, 'war3map.lua'), 'w') as file:
-    file.write(ats.node_to_str(full_content))
+# file_list, content_list = pm.get_contents('war3map.lua', src_dir)
+# 
+# print('\nUsed files:')
+# for f in file_list:
+#     print('  ' + f)
+# 
+# for i, file_path in enumerate(file_list):
+#     content_list[i] = pm.content_to_function(file_path, content_list[i])
+# 
+# full_content = pm.link_content(content_list)
+# pm.add_extension_functions(file_list, content_list)
+# 
+# pm.compiletime_execution(full_content, src_dir, dst_dir)
+# 
+# if not os.path.exists(dst_dir):
+#     os.mkdir(dst_dir)
+# 
+# with open(os.path.join(dst_dir, 'war3map.lua'), 'w') as file:
+#     file.write(ats.node_to_str(full_content))
+# 
