@@ -6,7 +6,6 @@
 
 import os
 import sys
-print(sys.version)
 import shutil
 
 import imports.parse_module as pm

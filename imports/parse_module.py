@@ -2,6 +2,7 @@
 
 '''
 import os
+import platform
 
 import pathlib
 from luaparser import ast
@@ -79,8 +80,8 @@ def fix_content_return(file_path, content):
 def compiletime_execution(main_path, src_path, dst_path):
     # Register compiletime vars and funcs.
     lua = cl.init_lua(src_path)
-    cl.execute(lua, '__src_dir = \'' + src_path + '\'')
-    cl.execute(lua, '__dst_dir = \'' + dst_path + '\'')
+    cl.execute(lua, '__src_dir = \'' + src_path.replace('\\', '\\\\') + '\'')
+    cl.execute(lua, '__dst_dir = \'' + dst_path.replace('\\', '\\\\') + '\'')
     cl.execute(lua, lua_code.LUA_COMPILETIME)
 
     # Run main file.
@@ -89,8 +90,8 @@ def compiletime_execution(main_path, src_path, dst_path):
         main_content = file.read()
     cl.execute(lua, main_content)
 
-    for k in lua.globals().require_list:
-        print(lua.globals().require_list[k])
+    for k in lua.globals().__require_list:
+        print(lua.globals().__require_list[k])
     
 
     # Get compiletime results.
