@@ -37,8 +37,8 @@ def load_modules(modules_list, src_path):
 def compile_lua(main_path, src_path, dst_path):
     # Register compiletime vars and funcs.
     lua = cl.init_lua(src_path)
-    cl.execute(lua, '__src_dir = \'' + src_path.replace('\\', '\\\\') + '\'')
-    cl.execute(lua, '__dst_dir = \'' + dst_path.replace('\\', '\\\\') + '\'')
+    cl.execute(lua, '_G.src_dir = \'' + src_path.replace('\\', '\\\\') + '\'')
+    cl.execute(lua, '_G.dst_dir = \'' + dst_path.replace('\\', '\\\\') + '\'')
 
     # Run main file.
     full_src_path = os.path.join(src_path, main_path)
@@ -69,6 +69,7 @@ def compile_lua(main_path, src_path, dst_path):
         trees[i] = (tree[0], content_to_function(tree[0], tree[1]))
         #print(ats.node_to_str(trees[i][1]))
     # Add require function for runtime
+    trees.reverse()
     require_tree = ast.parse(lua_code.LUA_REQUIRE)
     trees.insert(0, ('Require function', require_tree))
     result = ats.node_to_str(link_content(trees))
