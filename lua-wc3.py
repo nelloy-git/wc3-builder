@@ -34,7 +34,7 @@ for (root, subdir, dir_files) in os.walk(src_dir):
             os.mkdir(dst)
         shutil.copyfile(os.path.join(root, f_name), os.path.join(dst_dir, rel_root, f_name))
 
-pm.compiletime_execution('war3map.lua', src_dir, dst_dir)
+pm.compile_lua('war3map.lua', src_dir, dst_dir)
 
 # file_list, content_list = pm.get_contents('war3map.lua', src_dir)
 # 

@@ -7,21 +7,26 @@ LUA_COMPILETIME = \
 '''
 is_compiletime = true
 __compile_data = {
+    cur_module = \'war3map\',
     inside_compiletime_func = false,
     count = 0,
-    result = {}
+    result = {},
+    require_list = {}
 }
 
-__require_list = {}
 __original_require = _G.require
 function require(module)
     if not __compile_data.inside_compiletime_func then
-        table.insert(require_list, module)
+        table.insert(__compile_data.require_list, module)
     end
-    return __original_require(module)
+
+    local cur_module = __compile_data.cur_module
+    __compile_data.cur_module = module
+    res = __original_require(module)
+    __compile_data.cur_module = cur_module
+    return res
 end
 
-__is_inside_compiletime_func = false
 function compiletime(body, ...)
     if is_compiletime == false then
         print('Compiletime function is trying run in runtime')
@@ -32,14 +37,23 @@ function compiletime(body, ...)
         print(\'Can not run compiletime function inside other compiletim function\')
         return nil
     end
-    
+
     __compile_data.inside_compiletime_func = true
-    __compile_data.count = __compile_data.count + 1
-    if type(body) == \'function\' then
-        __compile_data.result[__compile_data.count] = body(...)
-    else
-        __compile_data.result[__compile_data.count] = body
+
+    local cur_module = __compile_data.cur_module
+    if not __compile_data.result[cur_module] then
+        __compile_data.result[cur_module] = {}
     end
+
+    if type(body) == \'function\' then
+        val = body(...)
+    else
+        val = body
+    end
+    table.insert(__compile_data.result[cur_module], val)
+    pos = #__compile_data.result[cur_module]
+    --print(\'Lua: inside \' .. cur_module, pos, __compile_data.result[cur_module][pos])
+
     __compile_data.inside_compiletime_func = false
 end
 '''

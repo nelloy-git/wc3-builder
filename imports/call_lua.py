@@ -18,19 +18,16 @@ def eval(lua, content):
     val_type = lg.type(val)
     return lua_to_ast(lua, val, val_type)
 
-
-def get_compile_res(lua, pos):
-    lg = lua.globals()
-    val = lua.eval('__compile_data.result[%d]' % pos)
-    val_type = lg.type(val)
-    return lua_to_ast(lua, val, val_type)
+def get_module_compiletime_results(lua, module):
+    print(lua.eval('__compile_data.result[%s]' % module))
+    return lua.eval('__compile_data.result[%s]' % module)
 
 
 def execute(lua, content):
     try:
         lua.execute(content)
     except RuntimeError as err:
-        print('RuntimeError: ', err)
+        print('RuntimeError:\n', err)
 
 
 def lua_to_ast(lua, val, val_type):
@@ -38,6 +35,10 @@ def lua_to_ast(lua, val, val_type):
         return ast.Nil()
     if val_type == 'number':
         return ast.Number(val)
+    if val_type == 'boolean':
+        if val:
+            return ast.TrueExpr()
+        return ast.FalseExpr()
     if val_type == 'string':
         return ast.String(val)
     if val_type == 'table':
