@@ -468,6 +468,8 @@ AST_LIST = [
 
 def node_to_str(node, lvl=0):
     ''' Converts node to string. '''
+    if node is None:
+        return ''
     for node_type in AST_LIST:
         if type(node) == node_type[0]:
             return node_type[1](node, lvl)

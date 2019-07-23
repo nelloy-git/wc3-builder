@@ -76,6 +76,18 @@ function require(name)
 end
 '''
 
+LUA_PRINT = \
+'''
+function print(msg)
+    if type(msg) == 'number' then
+        msg = R2S()
+    end
+    if type(msg) == 'string' then
+        for i = 0, 23 do
+            DisplayTextToPlayer(Player(i), 0, 0, msg)
+    end
+end
+'''
 
 LUA_REQUIRE_FUNC = \
     '''

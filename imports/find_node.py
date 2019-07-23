@@ -6,6 +6,7 @@ from luaparser import ast
 
 def change_node(tree, src, dst):
     attr_list = dir(tree)
+
     for attr in attr_list:
         if attr.startswith('__'):
             continue
@@ -21,8 +22,12 @@ def change_node(tree, src, dst):
         if type(val) == list:
             for i, elem in enumerate(val):
                 if elem == src:
-                    val[i] = dst
-                    elem = dst
+                    if isinstance(tree, ast.Block):
+                        val[i] = None
+                        elem = None
+                    else:
+                        val[i] = dst
+                        elem = dst
 
                 if isinstance(elem, ast.Node):
                     change_node(elem, src, dst)
