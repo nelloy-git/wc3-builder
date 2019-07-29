@@ -3,6 +3,7 @@
 '''
 
 from luaparser import ast
+import os
 
 
 def chunk_to_str(node, lvl):
@@ -160,7 +161,17 @@ def fornum_to_str(node, lvl):
 
 def forin_to_str(node, lvl):
     ''' Converts ast.Forin to str. '''
-    s_for = 'for ' + node_to_str(node.targets, lvl) + ' in ' + node_to_str(node.iter) + ' do\n' + \
+    s_targ = ''
+    for targ in node.targets:
+        s_targ += node_to_str(targ, lvl) + ', '
+    s_targ = s_targ[:-2]
+    
+    s_iter = ''
+    for it in node.iter:
+        s_iter += node_to_str(it, lvl) + ', '
+    s_iter = s_iter[:-2]
+
+    s_for = 'for ' + s_targ + ' in ' + s_iter + ' do\n' + \
             node_to_str(node.body, lvl) + '\n' + ('  ' * (lvl-1)) + 'end'
     return s_for
 
@@ -276,37 +287,37 @@ def anon_func_to_str(node, lvl):
 
 def add_to_str(node, lvl):
     ''' Converts ast.AddOp to str. '''
-    return node_to_str(node.left, lvl) + '+' + node_to_str(node.right, lvl)
+    return '(' + node_to_str(node.left, lvl) + '+' + node_to_str(node.right, lvl) + ')'
 
 
 def sub_to_str(node, lvl):
     ''' Converts ast.SubOp to str. '''
-    return node_to_str(node.left, lvl) + '-' + node_to_str(node.right, lvl)
+    return '(' + node_to_str(node.left, lvl) + '-' + node_to_str(node.right, lvl) + ')'
 
 
 def mult_to_str(node, lvl):
     ''' Converts ast.MultOp to str. '''
-    return node_to_str(node.left, lvl) + '*' + node_to_str(node.right, lvl)
+    return '(' + node_to_str(node.left, lvl) + '*' + node_to_str(node.right, lvl) + ')'
 
 
 def float_div_to_str(node, lvl):
     ''' Converts ast.FloatDivOp to str. '''
-    return node_to_str(node.left, lvl) + '/' + node_to_str(node.right, lvl)
+    return '(' + node_to_str(node.left, lvl) + '/' + node_to_str(node.right, lvl) + ')'
 
 
 def floor_div_to_str(node, lvl):
     ''' Converts ast.FloorDivOp to str. '''
-    return node_to_str(node.left, lvl) + '//' + node_to_str(node.right, lvl)
+    return '(' + node_to_str(node.left, lvl) + '//' + node_to_str(node.right, lvl) + ')'
 
 
 def mod_to_str(node, lvl):
     ''' Converts ast.ModOp to str. '''
-    return node_to_str(node.left, lvl) + '%' + node_to_str(node.right, lvl)
+    return '(' + node_to_str(node.left, lvl) + '%' + node_to_str(node.right, lvl) + ')'
 
 
 def expo_to_str(node, lvl):
     ''' Converts ast.Dots to str. '''
-    return node_to_str(node.left, lvl) + '^' + node_to_str(node.right, lvl)
+    return '(' + node_to_str(node.left, lvl) + '^' + node_to_str(node.right, lvl) + ')'
 
 
 def and_bit_to_str(node, lvl):
@@ -502,4 +513,4 @@ def path_to_module_name(path):
 
 def name_to_module_path(path):
     ''' Converts module name to module path. '''
-    return path.replace('.', '/') + '.lua'
+    return path.replace('.', os.sep) + '.lua'

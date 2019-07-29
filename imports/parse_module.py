@@ -34,6 +34,29 @@ def load_modules(modules_list, src_path):
     return tree_list
 
 
+def get_require_list(module, src_path, require_list):
+    rel_path = ats.name_to_module_path(module)
+    full_path = os.path.join(src_path, rel_path)
+    print(full_path)
+
+    if module in require_list:
+        return    
+    require_list.append(module)
+
+    with open(full_path, 'r') as file:
+        content = file.read()
+    tree = ast.parse(content)
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and ats.node_to_str(node.func) == 'require':
+            if len(node.args) > 1:
+                print('Error: require function can have only 1 constant string argument')
+            else:
+                get_require_list(ats.node_to_str(node.args[0])[1:-1], src_path, require_list)
+
+
+
+
 def compile_lua(main_path, src_path, dst_path):
     # Register compiletime vars and funcs.
     lua = cl.init_lua(src_path)
@@ -54,6 +77,10 @@ def compile_lua(main_path, src_path, dst_path):
             require_list.remove(val)
         require_list.append(val)
 
+    # test_list = []
+    # get_require_list('war3map', src_path, test_list)
+    # print('Test:\n', test_list)
+
     cl.execute(lua, 'local tmp = \'\'')
     trees = load_modules(require_list, src_path)
     for i, tree in enumerate(trees):
@@ -71,6 +98,9 @@ def compile_lua(main_path, src_path, dst_path):
     # Add require function for runtime
     trees.reverse()
     require_tree = ast.parse(lua_code.LUA_REQUIRE)
+    #for node in ast.walk(trees[0][1]):
+    #    print(node)
+    #print(ast.toPrettyStr(require_tree))
     trees.insert(0, ('Require function', require_tree))
     result = ats.node_to_str(link_content(trees))
     with open(os.path.join(dst_path, 'war3map.lua'), 'w') as file:
