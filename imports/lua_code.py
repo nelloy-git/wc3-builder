@@ -55,6 +55,7 @@ function compiletime(body, ...)
     --print(\'Lua: inside \' .. cur_module, pos, __compile_data.result[cur_module][pos])
 
     __compile_data.inside_compiletime_func = false
+    return val
 end
 '''
 

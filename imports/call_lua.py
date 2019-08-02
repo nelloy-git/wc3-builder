@@ -45,7 +45,10 @@ def lua_to_ast(lua, val, val_type):
         fields = []
         for field_name in val:
             field_val = lua_to_ast(lua, val[field_name], lua.globals().type(val[field_name]))
-            field = ast.Field(ast.Name(field_name), field_val)
+            if type(field_name) == str:
+                field = ast.Field(ast.Name(field_name), field_val)
+            if type(field_name) == int:
+                field = ast.Field(ast.Name('['+str(field_name)+']'), field_val)
             fields.append(field)
         return ast.Table(fields)
 

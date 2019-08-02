@@ -85,11 +85,14 @@ def compile_lua(main_path, src_path, dst_path):
     trees = load_modules(require_list, src_path)
     for i, tree in enumerate(trees):
         res_num = 1
+        print(require_list[i])
         results = '__compile_data.result[\'%s\']' % tree[0]
         for node in ast.walk(tree[1]):
             if isinstance(node, ast.Call) and ats.node_to_str(node.func) == 'compiletime':
                 #val = cl.eval(lua, ats.node_to_str(ast.Block(node.args)))
                 val = cl.eval(lua, results + '[' + str(res_num) + ']')
+                #print(res_num, ats.node_to_str(val))
+                #print(ats.node_to_str(node))
                 #print(tree[0], val)
                 find_node.change_node(tree[1], node, val)
                 res_num += 1
