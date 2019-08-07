@@ -22,6 +22,7 @@ function require(module)
 
     local cur_module = __compile_data.cur_module
     __compile_data.cur_module = module
+    if module == nil then print('Error!!!') end
     res = __original_require(module)
     __compile_data.cur_module = cur_module
     return res

@@ -66,10 +66,17 @@ def compile_lua(main_path, src_path, dst_path):
     full_src_path = os.path.join(src_path, main_path)
     with open(full_src_path, 'r') as file:
         main_content = file.read()
-    cl.execute(lua,lua_code.LUA_COMPILETIME + '\n' + main_content)
+    cl.execute(lua,lua_code.LUA_COMPILETIME)
 
     test_list = []
     get_require_list('war3map', src_path, test_list)
+    #print(test_list)
+
+    require_list = []
+    compiletime_list = []
+    for modname in test_list:
+        #print('require(' + modname + ')')
+        cl.execute(lua, 'require(\''+modname+'\')')
 
     print('Used modules:')
     #require_list = ['war3map']
@@ -78,8 +85,6 @@ def compile_lua(main_path, src_path, dst_path):
     #    if not val in require_list:
     #        require_list.append(val)
 
-    require_list = []
-    compiletime_list = []
     print('  Compiletime:')
     for modname in test_list:
         if not modname.startswith('compiletime.'):
@@ -87,7 +92,8 @@ def compile_lua(main_path, src_path, dst_path):
         else:
             print('    ' + modname)
             compiletime_list.append(modname)
-    cl.execute(lua, 'local tmp = \'\'')
+        
+        
     trees = load_modules(require_list, src_path)
     print('  Runtime:')
     for i, tree in enumerate(trees):
