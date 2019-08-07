@@ -37,10 +37,9 @@ def load_modules(modules_list, src_path):
 def get_require_list(module, src_path, require_list):
     rel_path = ats.name_to_module_path(module)
     full_path = os.path.join(src_path, rel_path)
-    print(full_path)
 
     if module in require_list:
-        return    
+        return
     require_list.append(module)
 
     with open(full_path, 'r') as file:
@@ -69,23 +68,31 @@ def compile_lua(main_path, src_path, dst_path):
         main_content = file.read()
     cl.execute(lua,lua_code.LUA_COMPILETIME + '\n' + main_content)
 
+    test_list = []
+    get_require_list('war3map', src_path, test_list)
+
     print('Used modules:')
-    require_list = ['war3map']
-    for k in lua.globals().__compile_data.require_list:
-        val = lua.globals().__compile_data.require_list[k]
-        if val in require_list:
-            require_list.remove(val)
-        require_list.append(val)
+    #require_list = ['war3map']
+    #for k in lua.globals().__compile_data.require_list:
+    #    val = lua.globals().__compile_data.require_list[k]
+    #    if not val in require_list:
+    #        require_list.append(val)
 
-    # test_list = []
-    # get_require_list('war3map', src_path, test_list)
-    # print('Test:\n', test_list)
-
+    require_list = []
+    compiletime_list = []
+    print('  Compiletime:')
+    for modname in test_list:
+        if not modname.startswith('compiletime.'):
+            require_list.append(modname)
+        else:
+            print('  ' + modname)
+            compiletime_list.append(modname)
     cl.execute(lua, 'local tmp = \'\'')
     trees = load_modules(require_list, src_path)
+    print('  Runtime:')
     for i, tree in enumerate(trees):
         res_num = 1
-        print(require_list[i])
+        print('    ' + require_list[i])
         results = '__compile_data.result[\'%s\']' % tree[0]
         for node in ast.walk(tree[1]):
             if isinstance(node, ast.Call) and ats.node_to_str(node.func) == 'compiletime':

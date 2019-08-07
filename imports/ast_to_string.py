@@ -257,7 +257,10 @@ def string_to_str(node, _lvl):
 
 def field_to_str(node, _lvl):
     ''' Converts ast.Field to str. '''
-    return node_to_str(node.key) + ' = ' + node_to_str(node.value)
+    key = node_to_str(node.key)
+    if isinstance(node.key, ast.Number):
+        key = '[' + key + ']'
+    return key + ' = ' + node_to_str(node.value)
 
 
 def table_to_str(node, lvl):
