@@ -112,6 +112,7 @@ def compile_lua(main_path, src_path, dst_path):
         trees[i] = (tree[0], content_to_function(tree[0], tree[1]))
         #print(ats.node_to_str(trees[i][1]))
     # Add require function for runtime
+    cl.execute(lua, '__finalize()')
     trees.reverse()
     require_tree = ast.parse(lua_code.LUA_REQUIRE)
     #for node in ast.walk(trees[0][1]):

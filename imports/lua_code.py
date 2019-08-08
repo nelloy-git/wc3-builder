@@ -58,6 +58,19 @@ function compiletime(body, ...)
     __compile_data.inside_compiletime_func = false
     return val
 end
+
+local __finalize_list = {}
+function __finalize()
+    for _, fun in pairs(__finalize_list) do
+        if type(fun) == 'function' then
+            fun()
+        end
+    end
+end
+
+function addCompiletimeFinalize(fun)
+    table.insert(__finalize_list, 1, fun)
+end
 '''
 
 
