@@ -49,8 +49,12 @@ def get_require_list(module, src_path, require_list):
     for node in ast.walk(tree):
         if isinstance(node, ast.Call) and ats.node_to_str(node.func) == 'require':
             if len(node.args) > 1:
-                print('Error: require function can have only 1 constant string argument')
+                print('\nError: require function can have only 1 constant string argument')
             else:
+                path = os.path.join(src_path, ats.name_to_module_path(ats.node_to_str(node.args[0])[1:-1]))
+                if not os.path.exists(os.path.join(src_path, path)):
+                    print('Error in ' + os.path.join(src_path, ats.name_to_module_path(module)) + '\nCan not find file ' + path)
+                    exit(-1)
                 get_require_list(ats.node_to_str(node.args[0])[1:-1], src_path, require_list)
 
 
@@ -66,7 +70,7 @@ def compile_lua(main_path, src_path, dst_path):
     full_src_path = os.path.join(src_path, main_path)
     with open(full_src_path, 'r') as file:
         main_content = file.read()
-    cl.execute(lua,lua_code.LUA_COMPILETIME)
+    cl.execute(lua, lua_code.LUA_COMPILETIME)
 
     test_list = []
     get_require_list('war3map', src_path, test_list)
@@ -74,9 +78,9 @@ def compile_lua(main_path, src_path, dst_path):
 
     require_list = []
     compiletime_list = []
+    cl.execute(lua, 'local success, result = 0, 0')
     for modname in test_list:
-        #print('require(' + modname + ')')
-        cl.execute(lua, 'require(\''+modname+'\')')
+        cl.execute(lua, 'require(\'' + modname + '\')')
 
     print('Used modules:')
     #require_list = ['war3map']
