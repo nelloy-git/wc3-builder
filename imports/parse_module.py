@@ -51,11 +51,12 @@ def get_require_list(module, src_path, require_list):
             if len(node.args) > 1:
                 print('\nError: require function can have only 1 constant string argument')
             else:
-                path = os.path.join(src_path, ats.name_to_module_path(ats.node_to_str(node.args[0])[1:-1]))
+                next_modname = ats.node_to_str(node.args[0])[1:-1]
+                path = os.path.join(src_path, ats.name_to_module_path(next_modname))
                 if not os.path.exists(os.path.join(src_path, path)):
-                    print('Error in ' + os.path.join(src_path, ats.name_to_module_path(module)) + '\nCan not find file ' + path)
+                    print('Error in ' + os.path.join(src_path, ats.name_to_module_path(module)) + '\nCan not find module ' + next_modname)
                     exit(-1)
-                get_require_list(ats.node_to_str(node.args[0])[1:-1], src_path, require_list)
+                get_require_list(next_modname, src_path, require_list)
 
 
 
