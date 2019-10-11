@@ -252,7 +252,8 @@ def varargs_to_str(_node, _lvl):
 
 def string_to_str(node, _lvl):
     ''' Converts ast.String to str. '''
-    return ('\"' + node.s + '\"').replace('\\', '\\\\').replace('\"', '\\\"').replace('\'', '\\\'')
+    res = node.s.replace('\\', '\\\\').replace('\"', '\\\"').replace('\'', '\\\'')
+    return ('\"' + res + '\"')
 
 
 def field_to_str(node, _lvl):
