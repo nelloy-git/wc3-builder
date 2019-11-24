@@ -63,8 +63,8 @@ def get_require_list(module, src_path, require_list):
 def compile_lua(src_path, dst_path):
     # Register compiletime vars and funcs.
     lua = cl.init_lua(src_path)
-    cl.execute(lua, '_G.src_dir = \'' + src_path.replace('\\', '\\\\') + '\'')
-    cl.execute(lua, '_G.dst_dir = \'' + dst_path.replace('\\', '\\\\') + '\'')
+    cl.execute(lua, '_G._src_dir = \'' + src_path.replace('\\', '\\\\') + '\'')
+    cl.execute(lua, '_G._dst_dir = \'' + dst_path.replace('\\', '\\\\') + '\'')
 
     # Run main file.
     cl.execute(lua, lua_code.LUA_COMPILETIME)
