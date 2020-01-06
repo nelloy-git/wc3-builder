@@ -1,13 +1,6 @@
-'''
-    Lua code lib.
-'''
-
-
-LUA_COMPILETIME = \
-'''
 local lua_wc3 = {}
 
-is_compiletime = true
+lua_wc3.is_compiletime = true
 lua_wc3.compiletime_packages = {}
 lua_wc3.runtime_packages = {}
 
@@ -16,14 +9,6 @@ local inside_compiletime_function = false
 function lua_wc3.init(src, dst)
     lua_wc3.src = src
     lua_wc3.dst = dst
-end
-
-function GetSource()
-    return lua_wc3.src
-end
-
-function GetDestination()
-    return lua_wc3.dst
 end
 
 local loading_modules = {}
@@ -66,7 +51,7 @@ local function checkCompiletimeResult(result)
     return false
 end
 
-function compiletime(body, ...)
+function _G.compiletime(body, ...)
     local info = debug.getinfo(2, 'lS')
 
     if inside_compiletime_function then
@@ -74,10 +59,12 @@ function compiletime(body, ...)
         return
     end
 
-    if not is_compiletime then
+    if not lua_wc3.is_compiletime then
         string.format('Error: compiletime function can not run in runtime. %s:%s', info.source, info.currentline)
         return
     end
+
+    local path = info.source
 
     local res
     if type(body) == 'function' then
@@ -136,30 +123,3 @@ end
 function addCompiletimeFinalize(fun)
     table.insert(__finalize_list, 1, fun)
 end
-
-return lua_wc3
-'''
-
-
-LUA_REQUIRE = \
-'''
-__require_data = {
-    loaded = {},
-    module = {},
-    result = {}
-}
-
-function require(name)
-    if not __require_data.loaded[name] then
-        __require_data.result[name] = __require_data.module[name]()
-        __require_data.loaded[name] = true
-    end
-    return __require_data.result[name]
-end
-'''
-
-LUA_REQUIRE_FUNC = \
-    '''
-    __require_data.module['name'] = function()
-    end
-    '''

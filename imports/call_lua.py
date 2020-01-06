@@ -18,6 +18,7 @@ def eval(lua, content):
     val_type = lg.type(val)
     return lua_to_ast(lua, val, val_type)
 
+
 def get_module_compiletime_results(lua, module):
     print(lua.eval('__compile_data.result[%s]' % module))
     return lua.eval('__compile_data.result[%s]' % module)
@@ -28,6 +29,12 @@ def execute(lua, content):
         lua.execute(content)
     except RuntimeError as err:
         print('RuntimeError:\n', err)
+
+
+def executeFile(lua, path):
+    with open(path, 'r') as file:
+        content = file.read()
+    lua.execute(content)
 
 
 def lua_to_ast(lua, val, val_type):
