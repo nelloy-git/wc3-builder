@@ -7,9 +7,7 @@
 import os
 import sys
 import shutil
-
-import imports.parse_module as pm
-import imports.ast_to_string as ats
+import lupa
 
 src_dir = sys.argv[1]
 dst_dir = sys.argv[2]
@@ -20,8 +18,8 @@ if len(sys.argv) > 3:
 print('')
 if not war3_exe is None:
     print('Warcraft III.exe path:\n  ' + war3_exe)
-print('Source dir path:\n  ' + src_dir)
-print('Destination dir path:\n  ' + dst_dir)
+print('Sources: ' + src_dir)
+print('Build: ' + dst_dir)
 
 # Copy non-lua files.
 for (root, subdir, dir_files) in os.walk(src_dir):
@@ -34,25 +32,11 @@ for (root, subdir, dir_files) in os.walk(src_dir):
             os.mkdir(dst)
         shutil.copyfile(os.path.join(root, f_name), os.path.join(dst_dir, rel_root, f_name))
 
-pm.compile_lua(src_dir, dst_dir)
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(cur_dir, 'lua_wc3.lua'), 'r') as file:
+    lua_wc3 = file.read()
 
-# file_list, content_list = pm.get_contents('war3map.lua', src_dir)
-# 
-# print('\nUsed files:')
-# for f in file_list:
-#     print('  ' + f)
-# 
-# for i, file_path in enumerate(file_list):
-#     content_list[i] = pm.content_to_function(file_path, content_list[i])
-# 
-# full_content = pm.link_content(content_list)
-# pm.add_extension_functions(file_list, content_list)
-# 
-# pm.compiletime_execution(full_content, src_dir, dst_dir)
-# 
-# if not os.path.exists(dst_dir):
-#     os.mkdir(dst_dir)
-# 
-# with open(os.path.join(dst_dir, 'war3map.lua'), 'w') as file:
-#     file.write(ats.node_to_str(full_content))
-# 
+os.chdir(src_dir)
+lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+lua.execute(lua_wc3)
+lua.execute('lua_wc3.compile(\'{0}\', \'{1}\')'.format(src_dir, dst_dir).replace('\\', '\\\\'))
