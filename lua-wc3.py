@@ -38,5 +38,4 @@ with open(os.path.join(cur_dir, 'lua_wc3.lua'), 'r') as file:
 
 os.chdir(src_dir)
 lua = lupa.LuaRuntime(unpack_returned_tuples=True)
-lua.execute(lua_wc3)
-lua.execute('lua_wc3.compile(\'{0}\', \'{1}\')'.format(src_dir, dst_dir).replace('\\', '\\\\'))
+lua.execute('local lua_wc3 = function()\n' + lua_wc3 + '\nend\nlocal Compile = lua_wc3()\nCompile(\'{0}\', \'{1}\')'.format(src_dir, dst_dir).replace('\\', '\\\\'))
