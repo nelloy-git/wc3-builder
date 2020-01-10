@@ -27,7 +27,16 @@ package_files['%s'] = function()
     %s
 end
 ]]
+if not package.loading then package.loading = {} end
+function import(x)
+  if package.loading[x] == nil then
+    package.loading[x] = true
+    require(x)
+    package.loading[x] = nil
+  end
+end
 local runtime_code = [[
+package_files = {}
 do
     local is_compiletime = false
 
@@ -35,7 +44,7 @@ do
         return is_compiletime
     end
 
-    loaded_packages = {}
+    local loaded_packages = {}
     function require(package_name)
         if not loaded_packages[package_name] then
             loaded_packages[package_name] = package_files[package_name]() or true
@@ -53,8 +62,9 @@ end
 
 ---@param path string
 local function path2name(path)
-    path = path:gsub(src_dir, '')
-    path = string.gsub(path, '\\', '.')
+    path = path:sub(#src_dir + 1)
+    --path = path:gsub(src_dir, '')
+    path = string.gsub(path, sep, '.')
     return path:sub(1, #path - 4)
 end
 
@@ -81,14 +91,14 @@ local function readFile(path)
 
     local s = string.find(str, '--[[', nil, true)
     while s do
-        local e = string.find(str, '%]%]', s)
+        local e = string.find(str, '%]%]', s) or s
         str = str:sub(1, s - 1)..str:sub(e + 2, #str)
         s = string.find(str, '--[[', nil, true)
     end
 
     s = string.find(str, '%-%-')
     while s do
-        local e = string.find(str, '\n', s)
+        local e = string.find(str, '\n', s) or s
         str = str:sub(1, s - 1)..str:sub(e + 1, #str)
         s = string.find(str, '%-%-')
     end
@@ -124,7 +134,7 @@ end
 local function Compile(src, dst)
     src_dir = src..sep
     dst_dir = dst..sep
-    assert(require('war3map'))
+    require('war3map')
 
     local res = runtime_packages[name2path('war3map')]
     runtime_packages[name2path('war3map')] = nil
@@ -168,7 +178,7 @@ function require(package_name)
 
     loading_packages[package_name] = true
     local res = original_require(package_name)
-    loading_packages[package_name] = false
+    loading_packages[package_name] = nil
     return res
 end
 
@@ -235,11 +245,11 @@ function Compiletime(body, ...)
 
     local path = src_dir..info.source:sub(4, #info.source)
     if runtime_packages[path] then
-        runtime_packages[path] = string.gsub(runtime_packages[path], 'Compiletime%b()', compiletimeToString(res), 1)
+        runtime_packages[path] = string.gsub(runtime_packages[path], ' Compiletime%b()', ' '..compiletimeToString(res), 1)
         --print(runtime_packages[path])
     end
     if compiletime_packages[path] then
-        compiletime_packages[path] = string.gsub(compiletime_packages[path], 'Compiletime%b()', compiletimeToString(res), 1)
+        compiletime_packages[path] = string.gsub(compiletime_packages[path], ' Compiletime%b()', ' '..compiletimeToString(res), 1)
         --print(compiletime_packages[path])
     end
 
