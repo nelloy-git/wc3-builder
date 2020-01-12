@@ -27,27 +27,26 @@ package_files['%s'] = function()
     %s
 end
 ]]
-if not package.loading then package.loading = {} end
-function import(x)
-  if package.loading[x] == nil then
-    package.loading[x] = true
-    require(x)
-    package.loading[x] = nil
-  end
-end
 local runtime_code = [[
 package_files = {}
 do
     local is_compiletime = false
 
-    function isCompiletime()
+    function IsCompiletime()
         return is_compiletime
     end
 
     local loaded_packages = {}
+    local loading_packages = {}
     function require(package_name)
+        if loading_packages[package_name] then
+            return nil
+        end
+
         if not loaded_packages[package_name] then
+            loading_packages[package_name] = true
             loaded_packages[package_name] = package_files[package_name]() or true
+            loading_packages[package_name] = nil
         end
         return loaded_packages[package_name]
     end
