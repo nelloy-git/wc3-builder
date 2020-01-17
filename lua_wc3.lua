@@ -200,6 +200,9 @@ end
 local function compiletimeToString(val)
     local t = type(val)
     if t == 'string' then
+        val = val:gsub('\'', '\\\'')
+        local c = string.char(37)
+        val = val:gsub('%%', '%%%%')
         return '\''..val..'\''
     elseif t == 'number' then
         return tostring(val)
@@ -218,7 +221,7 @@ function Compiletime(body, ...)
     local info = debug.getinfo(2, 'lSn')
 
     if inside_compiletime_function then
-        error(string.format('compiletime function can not run inside other compiletim function. %s:%d', info.source, info.currentline))
+        error(string.format('compiletime function can not run inside other compiletime function. %s:%d', info.source, info.currentline))
     end
 
     inside_compiletime_function = true
