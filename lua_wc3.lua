@@ -40,6 +40,7 @@ do
     local loading_packages = {}
     function require(package_name)
         if loading_packages[package_name] then
+            print('Recursive require detected.')
             return nil
         end
 
@@ -49,6 +50,10 @@ do
             loading_packages[package_name] = nil
         end
         return loaded_packages[package_name]
+    end
+
+    function AddCompileFinal(func)
+        return func()
     end
 end
 
@@ -87,7 +92,7 @@ local function readFile(path)
     end
 
     local str = table.concat(lines, '\n')
-
+--[[
     local s = string.find(str, '--[[', nil, true)
     while s do
         local e = string.find(str, '%]%]', s) or s
@@ -107,7 +112,7 @@ local function readFile(path)
         str = string.gsub(str, '\n\n', '\n')
         s = string.find(str, '\n\n')
     end
-
+]]
     return str
 end
 
@@ -136,6 +141,7 @@ local function Compile(src, dst)
     require('war3map')
 
     local res = runtime_packages[name2path('war3map')]
+    runFinalize()
     runtime_packages[name2path('war3map')] = nil
     for k, v in pairs(runtime_packages) do
         res = string.format(package_func_code,
@@ -143,7 +149,6 @@ local function Compile(src, dst)
     end
     res = runtime_code..res
     writeFile(res, dst_dir..sep..'war3map.lua')
-    runFinalize()
 end
 
 function require(package_name)
@@ -230,9 +235,9 @@ function Compiletime(body, ...)
         error(string.format('compiletime function can not run in runtime. %s:%d', info.source, info.currentline))
     end
 
-    if info.name then
-        error(string.format('compiletime function can be used in main file chunk only. %s:%d', info.source, info.currentline))
-    end
+    --if info.name then
+    --    error(string.format('compiletime function can be used in main file chunk only. %s:%d', info.source, info.currentline))
+    --end
 
     local res
     if type(body) == 'function' then
@@ -246,8 +251,21 @@ function Compiletime(body, ...)
     end
 
     local path = src_dir..info.source:sub(4, #info.source)
+    local line = info.currentline
     if runtime_packages[path] then
-        runtime_packages[path] = string.gsub(runtime_packages[path], ' Compiletime%b()', ' '..compiletimeToString(res), 1)
+        local ln = 1
+        local pos = 0
+        for i = 1, line - 1 do
+            pos = string.find(runtime_packages[path], '\n', pos + 1)
+            ln = ln + 1
+            print(ln, pos)
+        end
+        local prefix = runtime_packages[path]:sub(1, pos + 1)
+        local postfix = runtime_packages[path]:sub(pos + 1, -1)
+        postfix = postfix:gsub(' Compiletime%b()', ' '..compiletimeToString(res), 1)
+        print(postfix)
+        --print(runtime_packages[path]:sub(pos + 1))
+        runtime_packages[path] = prefix..postfix
         --print(runtime_packages[path])
     end
     if compiletime_packages[path] then
