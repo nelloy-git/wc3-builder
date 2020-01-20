@@ -258,12 +258,12 @@ function Compiletime(body, ...)
         for i = 1, line - 1 do
             pos = string.find(runtime_packages[path], '\n', pos + 1)
             ln = ln + 1
-            print(ln, pos)
+            --print(ln, pos)
         end
         local prefix = runtime_packages[path]:sub(1, pos + 1)
         local postfix = runtime_packages[path]:sub(pos + 1, -1)
         postfix = postfix:gsub(' Compiletime%b()', ' '..compiletimeToString(res), 1)
-        print(postfix)
+        --print(postfix)
         --print(runtime_packages[path]:sub(pos + 1))
         runtime_packages[path] = prefix..postfix
         --print(runtime_packages[path])
