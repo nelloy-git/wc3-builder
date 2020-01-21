@@ -202,12 +202,13 @@ local function Compile(src, dst)
     replaceCompiletime()
 
     -- Concat files
-    local res = runtime_code..runtime_packages[name2path('war3map')]
+    local res = runtime_packages[name2path('war3map')]
     runtime_packages[name2path('war3map')] = nil
     for k, v in pairs(runtime_packages) do
         res = string.format(package_func_code,
                             path2name(k), v:gsub('\n', '\n\t'))..'\n'..res
     end
+    res = runtime_code..res
 
     -- Save file
     res = optimize(res)
