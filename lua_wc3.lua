@@ -140,6 +140,7 @@ local function checkCompiletimeResult(result)
 end
 
 local function compiletimeToString(val)
+    --print(val)
     local t = type(val)
     if t == 'string' then
         val = val:gsub('\'', '\\\'')
@@ -148,7 +149,7 @@ local function compiletimeToString(val)
     elseif t == 'number' then
         return tostring(val)
     elseif t == 'nil' then
-        return 'nil'
+        return 'nil1'
     elseif t == 'boolean' then
         if val then
             return 'true'
@@ -279,7 +280,7 @@ function Compiletime(body, ...)
 
         table.insert(replace_compiletime.path, path)
         table.insert(replace_compiletime.original, original)
-        table.insert(replace_compiletime.result, res)
+        table.insert(replace_compiletime.result, res or 'nil')
     end
 
     inside_compiletime_function = false
