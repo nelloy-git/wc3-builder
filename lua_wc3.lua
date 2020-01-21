@@ -2,6 +2,17 @@ local is_compiletime = true
 local src_dir = ''
 local dst_dir = ''
 local sep = package.config:sub(1,1)
+local finalize = {
+    functions = {},
+    args = {}
+}
+
+
+local replace_compiletime = {
+    path = {},
+    original = {},
+    result = {}
+}
 
 ---@return boolean
 function IsCompiletime()
@@ -16,11 +27,24 @@ function GetDstDir()
     return dst_dir
 end
 
+--- Function executes at the end of running all required packages.
+--- This function does not exist in runtime
+function CompileFinal(func, ...)
+    table.insert(finalize.functions, func)
+    table.insert(finalize.args,{...})
+end
+
+--- Function executes at the end of running all required packages.
+--- This function will execute func(...) in runtime
+function CompiletimeFinalToRuntime(func, ...)
+    table.insert(finalize.functions, func)
+    table.insert(finalize.args, {...})
+end
+
 local compiletime_packages = {}
 local runtime_packages = {}
 local loading_packages = {}
 
-local original_require = _G.require
 local inside_compiletime_function = false
 local package_func_code = [[
 package_files['%s'] = function()
@@ -52,7 +76,7 @@ do
         return loaded_packages[package_name]
     end
 
-    function AddCompileFinal(func)
+    function CompiletimeFinalInit(func)
         return func()
     end
 end
@@ -67,7 +91,6 @@ end
 ---@param path string
 local function path2name(path)
     path = path:sub(#src_dir + 1)
-    --path = path:gsub(src_dir, '')
     path = string.gsub(path, sep, '.')
     return path:sub(1, #path - 4)
 end
@@ -92,27 +115,6 @@ local function readFile(path)
     end
 
     local str = table.concat(lines, '\n')
---[[
-    local s = string.find(str, '--[[', nil, true)
-    while s do
-        local e = string.find(str, '%]%]', s) or s
-        str = str:sub(1, s - 1)..str:sub(e + 2, #str)
-        s = string.find(str, '--[[', nil, true)
-    end
-
-    s = string.find(str, '%-%-')
-    while s do
-        local e = string.find(str, '\n', s) or s
-        str = str:sub(1, s - 1)..str:sub(e + 1, #str)
-        s = string.find(str, '%-%-')
-    end
-
-    s = string.find(str, '\n\n')
-    while s do
-        str = string.gsub(str, '\n\n', '\n')
-        s = string.find(str, '\n\n')
-    end
-]]
     return str
 end
 
@@ -121,71 +123,6 @@ local function writeFile(str, path)
     f:write(str)
     f:close()
 end
-
-local finalize_functions = {}
-function AddCompileFinal(func)
-    table.insert(finalize_functions, func)
-end
-
-local function runFinalize()
-    for i = 1, #finalize_functions do
-        finalize_functions[#finalize_functions + 1 - i]()
-    end
-end
-
----@param src string
----@param dst string
-local function Compile(src, dst)
-    src_dir = src..sep
-    dst_dir = dst..sep
-    require('war3map')
-
-    local res = runtime_packages[name2path('war3map')]
-    runFinalize()
-    runtime_packages[name2path('war3map')] = nil
-    for k, v in pairs(runtime_packages) do
-        res = string.format(package_func_code,
-                            path2name(k), v:gsub('\n', '\n\t'))..'\n'..res
-    end
-    res = runtime_code..res
-    writeFile(res, dst_dir..sep..'war3map.lua')
-end
-
-function require(package_name)
-    local info = debug.getinfo(2, 'lS')
-
-    if not type(package_name) == 'string' then
-        error(string.format('require function got non string value. %s:%s', info.source, info.currentline))
-    end
-
-    if info.name then
-        error(string.format('require function can be used in main file chunk only. %s:%d', info.source, info.currentline))
-    end
-
-    if loading_packages[package_name] then
-        return
-    end
-
-    --print(package_name, inside_compiletime_function)
-    local path = name2path(package_name)
-    if inside_compiletime_function then
-        if not compiletime_packages[path] then
-            print('Compiletime require:', path)
-            compiletime_packages[path] = readFile(path)
-        end
-    else
-        if not runtime_packages[path] then
-            print('Runtime require:', path)
-            runtime_packages[path] = readFile(path)
-        end
-    end
-
-    loading_packages[package_name] = true
-    local res = original_require(package_name)
-    loading_packages[package_name] = nil
-    return res
-end
-
 
 local function checkCompiletimeResult(result)
     local res_type = type(result)
@@ -206,13 +143,18 @@ local function compiletimeToString(val)
     local t = type(val)
     if t == 'string' then
         val = val:gsub('\'', '\\\'')
-        local c = string.char(37)
         val = val:gsub('%%', '%%%%')
         return '\''..val..'\''
     elseif t == 'number' then
         return tostring(val)
     elseif t == 'nil' then
         return 'nil'
+    elseif t == 'boolean' then
+        if val then
+            return 'true'
+        else
+            return 'false'
+        end
     elseif t == 'table' then
         local res = '{'
         for k, v in pairs(val) do
@@ -222,23 +164,94 @@ local function compiletimeToString(val)
     end
 end
 
-function Compiletime(body, ...)
-    local info = debug.getinfo(2, 'lSn')
+local function replaceCompiletime()
+    for i = 1, #replace_compiletime.path do
+        local path = replace_compiletime.path[i]
+        local original = replace_compiletime.original[i]:gsub("[%(%)%.%%%+%-%*%?%[%^%$%]]", "%%%1")
+        local result = compiletimeToString(replace_compiletime.result[i])
 
-    if inside_compiletime_function then
-        error(string.format('compiletime function can not run inside other compiletime function. %s:%d', info.source, info.currentline))
+        runtime_packages[path] = string.gsub(runtime_packages[path], original, result, 1)
+    end
+end
+
+local function runFinalize()
+    local count = #finalize.functions
+    for i = 1, count do
+        finalize.functions[count + 1 - i](table.unpack(finalize.args[count + 1 - i]))
+    end
+end
+
+local function optimize(str)
+    str = str:gsub('--%[%b[]%]', '')
+    str = str:gsub('%-%-[^\n]*\n', '')
+    str = str:gsub('\n[%s\n\t]*\n', '\n')
+    return str
+end
+
+---@param src string
+---@param dst string
+local function Compile(src, dst)
+    src_dir = src..sep
+    dst_dir = dst..sep
+
+    -- Run lua code.
+    require('war3map')
+    -- Run final functions list.
+    runFinalize()
+    -- Replace Compiletime functions with their values. 
+    replaceCompiletime()
+
+    -- Concat files
+    local res = runtime_code..runtime_packages[name2path('war3map')]
+    runtime_packages[name2path('war3map')] = nil
+    for k, v in pairs(runtime_packages) do
+        res = string.format(package_func_code,
+                            path2name(k), v:gsub('\n', '\n\t'))..'\n'..res
     end
 
+    -- Save file
+    res = optimize(res)
+    writeFile(res, dst_dir..sep..'war3map.lua')
+end
+
+local original_require = _G.require
+function require(package_name)
+    if not type(package_name) == 'string' then
+        error('require function got non string value.', 2)
+    end
+
+    if loading_packages[package_name] then
+        error('recursive require detected.', 2)
+    end
+
+    local path = name2path(package_name)
+    if inside_compiletime_function then
+        if not compiletime_packages[path] then
+            print('Compiletime require:', path)
+            compiletime_packages[path] = readFile(path)
+        end
+    else
+        if not runtime_packages[path] then
+            print('Runtime require:', path)
+            runtime_packages[path] = readFile(path)
+        end
+    end
+
+    loading_packages[package_name] = true
+    local res = original_require(package_name)
+    loading_packages[package_name] = nil
+    return res
+end
+
+--- Compiletime functions are replaced with their results after all lua code is done.
+function Compiletime(body, ...)
+    -- Check Compiletime(... Compiletime(...) ...)
+    if inside_compiletime_function then
+        error('compiletime function can not run inside another compiletime function.', 2)
+    end
     inside_compiletime_function = true
 
-    if not is_compiletime then
-        error(string.format('compiletime function can not run in runtime. %s:%d', info.source, info.currentline))
-    end
-
-    --if info.name then
-    --    error(string.format('compiletime function can be used in main file chunk only. %s:%d', info.source, info.currentline))
-    --end
-
+    -- Get result
     local res
     if type(body) == 'function' then
         res = body(...)
@@ -247,9 +260,10 @@ function Compiletime(body, ...)
     end
 
     if not checkCompiletimeResult(res) then
-        error(string.format('compiletime function can return only string, number or table with strings, numbers and tables. %s:%s', info.source, info.currentline))
+        error('compiletime function can return only string, number or table with strings, numbers and tables. %s:%s', 2)
     end
 
+    local info = debug.getinfo(2, 'lSn')
     local path = src_dir..info.source:sub(4, #info.source)
     local line = info.currentline
     if runtime_packages[path] then
@@ -258,23 +272,16 @@ function Compiletime(body, ...)
         for i = 1, line - 1 do
             pos = string.find(runtime_packages[path], '\n', pos + 1)
             ln = ln + 1
-            --print(ln, pos)
         end
-        local prefix = runtime_packages[path]:sub(1, pos + 1)
-        local postfix = runtime_packages[path]:sub(pos + 1, -1)
-        postfix = postfix:gsub(' Compiletime%b()', ' '..compiletimeToString(res), 1)
-        --print(postfix)
-        --print(runtime_packages[path]:sub(pos + 1))
-        runtime_packages[path] = prefix..postfix
-        --print(runtime_packages[path])
-    end
-    if compiletime_packages[path] then
-        compiletime_packages[path] = string.gsub(compiletime_packages[path], ' Compiletime%b()', ' '..compiletimeToString(res), 1)
-        --print(compiletime_packages[path])
+        local postfix = runtime_packages[path]:sub(pos + 1)
+        local original = postfix:match('[^%a]Compiletime%b()'):sub(2)
+
+        table.insert(replace_compiletime.path, path)
+        table.insert(replace_compiletime.original, original)
+        table.insert(replace_compiletime.result, res)
     end
 
     inside_compiletime_function = false
-
     return res
 end
 
