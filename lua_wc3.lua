@@ -76,7 +76,7 @@ do
         return loaded_packages[package_name]
     end
 
-    function CompiletimeFinalInit(func)
+    function CompiletimeFinalToRuntime(func)
         return func()
     end
 end
