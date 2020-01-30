@@ -184,7 +184,7 @@ end
 
 local function optimize(str)
     str = str:gsub('--%[%b[]%]', '')
-    str = str:gsub('%-%-[^\n]*\n', '')
+    str = str:gsub('%-%-[^\n]*', '')
     str = str:gsub('\n[%s\n\t]*\n', '\n')
     return str
 end
