@@ -57,8 +57,8 @@ local function isResultValid(result)
         return true
     elseif t == 'table' then
         for k, v in pairs(result) do
-            local valid = BuildtimeMacro.isDataValid(k) and
-                          BuildtimeMacro.isDataValid(v)
+            local valid = isResultValid(k) and
+                          isResultValid(v)
 
             if not valid then
                 return false
