@@ -89,11 +89,8 @@ local function macroFunc(body, ...)
     registerMacro(path, line, res)
 
     inside_macro = false
-end
 
-local build_final_list = {}
-local function buildFinal(func, ...)
-    table.insert(build_final_list, {f = func, a = {...}})
+    return res
 end
 
 ---@return table<integer, BuildtimeMacroData>
@@ -113,14 +110,8 @@ function BuildtimeMacro.enable(flag, src_dir)
     if flag then
         macro_list = {}
         _G.Macro = macroFunc
-        _G.BuildFinal = buildFinal
     else
-        for i = 1, #build_final_list do
-            build_final_list[i].f(table.unpack(build_final_list[i].a))
-        end
-        
         _G.Macro = nil
-        _G.BuildFinal = nil
     end
 end
 

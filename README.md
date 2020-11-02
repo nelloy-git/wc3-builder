@@ -23,12 +23,12 @@ return boolean
 IsGame()
 
 Returns relative source dir path.
-@return string
+return string
 
 GetSrc()
 
 Returns relative result dir path.
-@return string
+return string
 
 GetDst()
 
@@ -37,6 +37,10 @@ Works like macro. If string or number is used as argument code will be changed i
 If table is used it must contain strings and numbers or other tables with strings and numbers.
 If "body" type is function vararg must contain arguments for this function. Example: "Macro(math.abs, -1)" -> "1"
 This function is available in buildtime only.
-@param body fun | table | string | number
+param body fun | table | string | number
 
 Macro(body, ...)
+
+Adds function to list which is going be executed at the end of the building.
+In runtime it works like fun(...)
+BuildFinal(func, ...)

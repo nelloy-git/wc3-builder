@@ -1,4 +1,6 @@
 
+---@type BuildtimeBuildFinal
+local BuildtimeBuildFinal = require('Buildtime.BuildFinal')
 ---@type BuildtimeFileUtils
 local BuildtimeFileUtils = require('Buildtime.FileUtils')
 ---@type BuildtimeMacro
@@ -77,6 +79,7 @@ end
 
 local function enableAPI(flag)
     BuildtimeRequire.enable(flag, map_src)
+    BuildtimeBuildFinal.enable(flag)
     BuildtimeMacro.enable(flag, map_src)
 
     if flag then
@@ -117,6 +120,8 @@ function BuildtimeProcess.build(src, dst)
     local sep = package.config:sub(1,1)
     local this_file_path = debug.getinfo(2, "S").source:sub(2)
     local this_dir_path = this_file_path:sub(1, this_file_path:match('^.*()'..sep))
+
+    print('Building started.')
 
     -- Clear dst dir.
     if sep == '/' then
@@ -169,6 +174,8 @@ function BuildtimeProcess.build(src, dst)
     os.execute('mkdir '..dst..sep..dst_dir)
     local out_path = dst..sep..dst_dir..sep..'war3map.lua'
     BuildtimeFileUtils.writeFile(output, out_path)
+    
+    print('Building finished.')
 end
 
 return BuildtimeProcess
