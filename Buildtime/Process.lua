@@ -85,7 +85,7 @@ local function enableAPI(flag)
     if flag then
         IsGame = function() return false end
         GetSrc = function() return map_src end
-        GetDst = function() return map_dst end
+        GetDst = function() return map_dst..package.config:sub(1,1)..dst_dir end
     else
         IsGame = nil
         GetSrc = nil
@@ -132,6 +132,7 @@ function BuildtimeProcess.build(src, dst)
         os.execute('rmdir /Q /S '..dst)
     end
     os.execute('mkdir '..dst)
+    os.execute('mkdir '..dst..sep..dst_dir)
 
     enableAPI(true)
     -- Start user's script
@@ -150,12 +151,16 @@ function BuildtimeProcess.build(src, dst)
 
     -- Prepare runtime scripts.
     local builder_dir = this_dir_path:sub(1, this_file_path:match('^.*()'..sep))
+    local buildFinal_runtime = BuildtimeFileUtils.readFile(builder_dir..sep..'Runtime'..sep..'BuildFinal.lua')
     local default_runtime = BuildtimeFileUtils.readFile(builder_dir..sep..'Runtime'..sep..'Default.lua')
     local macro_runtime = BuildtimeFileUtils.readFile(builder_dir..sep..'Runtime'..sep..'Macro.lua')
     local require_runtime = BuildtimeFileUtils.readFile(builder_dir..sep..'Runtime'..sep..'Require.lua')
 
     -- Generate output file
-    local output = default_runtime..'\n\n'..require_runtime..'\n\n'..macro_runtime
+    local output = default_runtime..'\n\n'..
+                   require_runtime..'\n\n'..
+                   macro_runtime..'\n\n'..
+                   buildFinal_runtime
     BuildtimeFileUtils.writeFile('List of used packages:', dst..sep..log_name)
     for path, context in pairsByKeys(packages) do
         local package_name = path:sub(1, #path - 4):gsub(sep, '.')
@@ -171,7 +176,6 @@ function BuildtimeProcess.build(src, dst)
     output = output:gsub('\n[%s\n\t]*\n', '\n')
 
     -- Save to map_dir
-    os.execute('mkdir '..dst..sep..dst_dir)
     local out_path = dst..sep..dst_dir..sep..'war3map.lua'
     BuildtimeFileUtils.writeFile(output, out_path)
     
