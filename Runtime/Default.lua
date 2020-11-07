@@ -1,3 +1,7 @@
+function IsGame()
+    return true
+end
+
 function main()
     local success, result = pcall(require, 'main')
     if not success then

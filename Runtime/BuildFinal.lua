@@ -1,3 +1,3 @@
 do
-    BuildFinalFinal = function(func, ...) return func(...) end
+    BuildFinal = function(func, ...) return func(...) end
 end
