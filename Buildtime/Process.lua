@@ -12,7 +12,7 @@ local BuildtimeProcess = {}
 
 local dst_dir = 'map_dir'
 local dst_mpq = 'map_mpq'
-local log_name = 'log.txt'
+local log_name = 'used_files.txt'
 local map_src
 local map_dst
 local package_template = [[
