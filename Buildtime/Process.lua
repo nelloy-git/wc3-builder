@@ -77,10 +77,10 @@ local function replaceMacro(file_list, macro_list)
     end
 end
 
-local function enableAPI(flag)
-    BuildtimeRequire.enable(flag, map_src)
+local function enableAPI(flag, lua_src)
+    BuildtimeRequire.enable(flag, lua_src)
     BuildtimeBuildFinal.enable(flag)
-    BuildtimeMacro.enable(flag, map_src)
+    BuildtimeMacro.enable(flag, lua_src)
 
     if flag then
         IsGame = function() return false end
@@ -113,7 +113,8 @@ end
 
 ---@param src string
 ---@param dst string
-function BuildtimeProcess.build(src, dst)
+---@param lang string "'lua'" | "'ts'"
+function BuildtimeProcess.build(src, dst, lang)
     map_src = src
     map_dst = dst
 
@@ -134,10 +135,22 @@ function BuildtimeProcess.build(src, dst)
     os.execute('mkdir '..dst)
     os.execute('mkdir '..dst..sep..dst_dir)
 
-    enableAPI(true)
+    local lua_src
+    if lang == 'ts' then
+        print('Compiling TypeScript')
+        lua_src = dst..sep..'tmp_lua'
+        os.execute('mkdir '..lua_src)
+        os.execute ('tstl --rootDir '..src..' '..
+                         '--outDir '..map_dst..sep..'tmp_lua')
+        print('Done')
+    else
+        lua_src = src
+    end
+
+    enableAPI(true, lua_src)
     -- Start user's script
     local package_path = package.path
-    package.path = src..sep.."?.lua"
+    package.path = lua_src..sep.."?.lua"
     require('config')
     require('main')
     package.path = package_path
@@ -178,7 +191,11 @@ function BuildtimeProcess.build(src, dst)
     -- Save to map_dir
     local out_path = dst..sep..dst_dir..sep..'war3map.lua'
     BuildtimeFileUtils.writeFile(output, out_path)
-    
+
+    if lang == 'ts' then
+        os.execute ('rm -r '..dst..sep..'tmp_lua')
+    end
+
     print('Building finished.')
 end
 

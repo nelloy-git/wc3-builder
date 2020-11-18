@@ -12,4 +12,4 @@ package.path = package_path
 
 -- TODO argparse
 
-Process.build(arg[1], arg[2])
+Process.build(arg[1], arg[2], arg[3])
