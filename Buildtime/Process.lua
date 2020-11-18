@@ -139,9 +139,10 @@ function BuildtimeProcess.build(src, dst, lang)
     if lang == 'ts' then
         print('Compiling TypeScript')
         lua_src = dst..sep..'tmp_lua'
-        os.execute('mkdir '..lua_src)
-        os.execute ('tstl --rootDir '..src..' '..
-                         '--outDir '..map_dst..sep..'tmp_lua')
+        os.execute('mkdir '..lua_src)  
+        os.execute ('node ./node_modules/typescript-to-lua/dist/tstl.js '..
+                        '--rootDir '..src..' '..
+                        '--outDir '..map_dst..sep..'tmp_lua')
         print('Done')
     else
         lua_src = src
@@ -193,7 +194,7 @@ function BuildtimeProcess.build(src, dst, lang)
     BuildtimeFileUtils.writeFile(output, out_path)
 
     if lang == 'ts' then
-        os.execute ('rm -r '..dst..sep..'tmp_lua')
+        --os.execute ((sep == '/' and 'rm -r ' or 'rmdir /Q /S ')..dst..sep..'tmp_lua')
     end
 
     print('Building finished.')
