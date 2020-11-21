@@ -127,20 +127,23 @@ function BuildtimeProcess.build(src, dst, lang)
     -- Clear dst dir.
     if sep == '/' then
         -- Linux
-        os.execute('rm -r '..dst)
+        os.execute('rm -r '..dst..sep..dst_dir)
     elseif sep == '\\' then
         -- Windows
-        os.execute('rmdir /Q /S '..dst)
+        os.execute('rmdir /Q /S '..dst..sep..dst_dir)
     end
-    os.execute('mkdir '..dst)
+    -- os.execute('mkdir '..dst)
     os.execute('mkdir '..dst..sep..dst_dir)
 
     local lua_src
     if lang == 'ts' then
         print('Compiling TypeScript')
         lua_src = dst..sep..'tmp_lua'
-        os.execute('mkdir '..lua_src)  
+        if (not BuildtimeFileUtils.isExist(lua_src)) then
+            os.execute('mkdir '..lua_src)
+        end
         os.execute ('node ./node_modules/typescript-to-lua/dist/tstl.js '..
+                        '--experimentalDecorators '..
                         '--rootDir '..src..' '..
                         '--outDir '..map_dst..sep..'tmp_lua')
         print('Done')
