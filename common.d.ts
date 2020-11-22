@@ -2544,7 +2544,7 @@ declare function TriggerRegisterPlayerUnitEvent(
     whichTrigger: jtrigger,
     whichPlayer: jplayer,
     whichPlayerUnitEvent: jplayerunitevent,
-    filter: jboolexpr
+    filter?: jboolexpr
 ): jevent
 declare function GetLevelingUnit(): junit
 declare function GetLearningUnit(): junit
@@ -4850,13 +4850,13 @@ declare function BlzConvertColor(a: number, r: number, g: number, b: number): nu
 declare function BlzLoadTOCFile(TOCFile: string): boolean
 declare function BlzCreateFrame(
     name: string,
-    owner: jframehandle,
+    owner: jframehandle | null,
     priority: number,
     createContext: number
 ): jframehandle
 declare function BlzCreateSimpleFrame(
     name: string,
-    owner: jframehandle,
+    owner: jframehandle | null,
     createContext: number
 ): jframehandle
 declare function BlzCreateFrameByType(
@@ -4925,8 +4925,8 @@ declare function BlzFrameSetStepSize(frame: jframehandle, stepSize: number): voi
 declare function BlzFrameSetSize(frame: jframehandle, width: number, height: number): void
 declare function BlzFrameSetVertexColor(frame: jframehandle, color: number): void
 declare function BlzFrameSetLevel(frame: jframehandle, level: number): void
-declare function BlzFrameSetParent(frame: jframehandle, parent: jframehandle): void
-declare function BlzFrameGetParent(frame: jframehandle): jframehandle
+declare function BlzFrameSetParent(frame: jframehandle, parent?: jframehandle): void
+declare function BlzFrameGetParent(frame: jframehandle): jframehandle | null
 declare function BlzFrameGetHeight(frame: jframehandle): number
 declare function BlzFrameGetWidth(frame: jframehandle): number
 declare function BlzFrameSetFont(
