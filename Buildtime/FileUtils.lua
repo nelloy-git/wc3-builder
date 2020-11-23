@@ -16,6 +16,10 @@ function BuildtimeFileUtils.isExist(path)
     return ok, err
 end
 
+function BuildtimeFileUtils.isDir(path)
+    return BuildtimeFileUtils.isExist(path..sep)
+end
+
 function BuildtimeFileUtils.getFileDir(path)
     return path:sub(1, path:match('^.*()'..sep))
 end

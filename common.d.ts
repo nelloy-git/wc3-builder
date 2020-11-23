@@ -4973,7 +4973,7 @@ declare function BlzSetMousePos(x: number, y: number): void
 declare function BlzGetLocalClientWidth(): number
 declare function BlzGetLocalClientHeight(): number
 declare function BlzIsLocalClientActive(): boolean
-declare function BlzGetMouseFocusUnit(): junit
+declare function BlzGetMouseFocusUnit(): junit | undefined
 declare function BlzChangeMinimapTerrainTex(texFile: string): boolean
 declare function BlzGetLocale(): string
 declare function BlzGetSpecialEffectScale(whichEffect: jeffect): number

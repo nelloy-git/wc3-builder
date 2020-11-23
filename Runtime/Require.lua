@@ -10,7 +10,10 @@ do
 
         if not loaded_packages[package_name] then
             if not __required_packages[package_name] then
-                error('Can not find module '..package_name, 2)
+                if not __required_packages[package_name..'.index'] then
+                    error('Can not find module '..package_name, 2)
+                end
+                package_name = package_name..'.index'
             end
 
             loading_packages[package_name] = true

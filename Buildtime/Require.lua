@@ -31,6 +31,14 @@ local function changed_require(package_name)
         error('recursive require detected.', 2)
     end
 
+    local sep = package.config:sub(1,1)
+    local file_path = src..sep..package_name:gsub('%.', sep)..'.lua'
+    local dir_path = src..sep..package_name:gsub('%.', sep)
+    if not BuildtimeFileUtils.isExist(file_path) and
+           BuildtimeFileUtils.isDir(dir_path) then
+        package_name = package_name..'.index'
+    end
+
     registerFile(package_name)
 
     loading_packages[package_name] = true

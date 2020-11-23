@@ -1,6 +1,6 @@
 /** @noSelfInFile */
 
-type BuilderData = string|number|undefined|(string|number|undefined)[]
+type BuilderData = string|number|undefined|void|(string|number|undefined|void)[]
 type BuilderFunc = (...args: BuilderData[]) => BuilderData
 
 declare function IsGame() : boolean;
