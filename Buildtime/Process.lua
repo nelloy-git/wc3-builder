@@ -128,12 +128,12 @@ function BuildtimeProcess.build(src, dst, lang)
     if sep == '/' then
         -- Linux
         os.execute('rm -r '..dst..sep..dst_dir)
+        os.execute('mkdir -p '..dst..sep..dst_dir)
     elseif sep == '\\' then
         -- Windows
         os.execute('rmdir /Q /S '..dst..sep..dst_dir)
+        os.execute('mkdir '..dst..sep..dst_dir)
     end
-    -- os.execute('mkdir '..dst)
-    os.execute('mkdir -p '..dst..sep..dst_dir)
 
     local lua_src
     if lang == 'ts' then
