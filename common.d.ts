@@ -4929,6 +4929,7 @@ declare function BlzFrameSetParent(frame: jframehandle, parent?: jframehandle): 
 declare function BlzFrameGetParent(frame: jframehandle): jframehandle | null
 declare function BlzFrameGetHeight(frame: jframehandle): number
 declare function BlzFrameGetWidth(frame: jframehandle): number
+declare function BlzFrameGetChild(frame: jframehandle, i: number): jframehandle|void
 declare function BlzFrameSetFont(
     frame: jframehandle,
     fileName: string,
