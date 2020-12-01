@@ -142,7 +142,7 @@ function BuildtimeProcess.build(src, dst, lang)
         if (not BuildtimeFileUtils.isExist(lua_src)) then
             os.execute('mkdir '..lua_src)
         end
-        os.execute ('npm install -D')
+        -- os.execute ('npm install -D')
         os.execute ('node ./node_modules/typescript-to-lua/dist/tstl.js'..
                         ' --experimentalDecorators'..
                         ' --rootDir '..src..
