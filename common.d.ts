@@ -2324,7 +2324,7 @@ declare function GroupEnumUnitsOfTypeCounted(
     filter: jboolexpr,
     countLimit: number
 ): void
-declare function GroupEnumUnitsInRect(whichGroup: jgroup, r: jrect, filter: jboolexpr): void
+declare function GroupEnumUnitsInRect(whichGroup: jgroup, r: jrect, filter?: jboolexpr): void
 declare function GroupEnumUnitsInRectCounted(
     whichGroup: jgroup,
     r: jrect,
@@ -2336,7 +2336,7 @@ declare function GroupEnumUnitsInRange(
     x: number,
     y: number,
     radius: number,
-    filter: jboolexpr
+    filter?: jboolexpr
 ): void
 declare function GroupEnumUnitsInRangeOfLoc(
     whichGroup: jgroup,

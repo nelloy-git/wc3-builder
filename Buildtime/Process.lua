@@ -33,7 +33,7 @@ local function toString(data, log)
         data = data:gsub('\'', '\\\'')
         data = data:gsub('\\', '\\\\')
         data = data:gsub('%%', '%%%%')
-        return '\''..data..'\''
+        return '\''..data:gsub('\n', '\\n\'..\n\'')..'\''
     elseif t == 'number' then
         return tostring(data)
     elseif t == 'nil' then
