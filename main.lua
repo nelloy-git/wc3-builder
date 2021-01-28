@@ -12,10 +12,12 @@ local Build = require('src.Build')
 local File = require('src.File')
 ---@type BuilderJson
 local Json = require('src.Json')
-
+---@type BuilderConfig
 local Config = require('src.Config')
 
-local conf = Config.parse(__dir__..'conf.json')
+
+local conf_path = arg[1]
+local conf = Config.parse(conf_path)
 if (not conf) then return end
 
 Build.start(conf)
