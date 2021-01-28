@@ -1,12 +1,12 @@
----@type BuildtimeFileUtils
-local BuildtimeFileUtils = require('Buildtime.FileUtils')
+---@type BuilderFile
+local File = require('src.File')
 
 ---@class BuildtimeMacro
-local BuildtimeMacro = {}
+local BuilderMacro = {}
 
 local inside_macro = false
 local macro_list
-local src
+local src = GetSrc()
 
 ---@param str string
 ---@param line number
@@ -23,11 +23,11 @@ end
 ---@param line number
 ---@return string
 local function findMarco(file_path, line)
-    if not BuildtimeFileUtils.isExist(file_path) then
+    if not File.isExist(file_path) then
         error('Can not find file: '..file_path, 3)
     end
 
-    local context = BuildtimeFileUtils.readFile(file_path)
+    local context = File.read(file_path)
     local pos = findLine(context, line)
     local postfix = context:sub(pos + 1)
     return postfix:match('Macro%b()')
@@ -37,7 +37,7 @@ end
 ---@param line number
 ---@param result nil | boolean | number | string | table
 local function registerMacro(path, line, result)
-    ---@class BuildtimeMacroData
+    ---@class BuilderMacroData
     local macro_data = {
         path = path:sub(src:len() + 2),
         origin = findMarco(path, line),
@@ -93,8 +93,8 @@ local function macroFunc(body, ...)
     return res
 end
 
----@return table<integer, BuildtimeMacroData>
-function BuildtimeMacro.getMacroList()
+---@return table<integer, BuilderMacroData>
+function BuilderMacro.getMacroList()
     local copy = {}
     for k,v in pairs(macro_list) do
         copy[k] = v
@@ -102,9 +102,66 @@ function BuildtimeMacro.getMacroList()
     return copy
 end
 
+---@param data nil | boolean | number | string | table
+---@param log integer
+local function toString(data, log)
+    local t = type(data)
+    if t == 'string' then
+        if data == 'nil' then
+            error('BuilderMacro: can not return string \'nil\'', log or 4)
+        end
+
+        data = data:gsub('\'', '\\\'')
+        data = data:gsub('\\', '\\\\')
+        data = data:gsub('%%', '%%%%')
+        return '\''..data:gsub('\n', '\\n\'..\n\'')..'\''
+    elseif t == 'number' then
+        return tostring(data)
+    elseif t == 'nil' then
+        return 'nil'
+    elseif t == 'boolean' then
+        if data then
+            return 'true'
+        else
+            return 'false'
+        end
+    elseif t == 'table' then
+        local res = '{\n'
+        for k, v in pairs(data) do
+            res = res..string.format('[%s] = %s,\n',
+                                     toString(k, log and log + 1 or 4),
+                                     toString(v, log and log + 1 or 4))
+        end
+        return res..'}'
+    else
+        error('Can not use \''..t..'\' type', log or 4)
+    end
+end
+
+---@param files table<string, string> @format: <path, context>
+function BuilderMacro.replace(files)
+    for i = 1, #macro_list do
+        local macro_data = macro_list[i]
+        local path = macro_data.path
+
+        if files[path] then
+            local origin = macro_data.origin:gsub("[%(%)%.%%%+%-%*%?%[%^%$%]]", "%%%1")
+            local result = macro_data.result
+
+            local success, s_data = pcall(toString, result)
+            if not success then
+                error('BuilderMacro: error in Macro:\n'..s_data, 1)
+            end
+
+            s_data = (s_data == 'nil') and '' or s_data
+            files[path] = string.gsub(files[path], origin, s_data, 1)
+        end
+    end
+end
+
 ---@param flag boolean
 ---@param src_dir string
-function BuildtimeMacro.enable(flag, src_dir)
+function BuilderMacro.enable(flag, src_dir)
     src = src_dir
 
     if flag then
@@ -115,4 +172,4 @@ function BuildtimeMacro.enable(flag, src_dir)
     end
 end
 
-return BuildtimeMacro
+return BuilderMacro

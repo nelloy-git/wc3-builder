@@ -8,10 +8,6 @@ package.path = package.path..';'..__dir__..sep.."?.lua"
 
 ---@type BuilderBuild
 local Build = require('src.Build')
----@type BuilderFile
-local File = require('src.File')
----@type BuilderJson
-local Json = require('src.Json')
 ---@type BuilderConfig
 local Config = require('src.Config')
 

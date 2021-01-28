@@ -1,5 +1,5 @@
----@class BuildtimeBuildFinal
-local BuildtimeBuildFinal = {}
+---@class BuilderBuildFinal
+local BuilderBuildFinal = {}
 
 local build_final_list
 
@@ -8,7 +8,7 @@ local function buildFinalFunc(func, ...)
 end
 
 ---@param flag boolean
-function BuildtimeBuildFinal.enable(flag)
+function BuilderBuildFinal.enable(flag)
     if flag then
         build_final_list = {}
         _G.BuildFinal = buildFinalFunc
@@ -20,4 +20,4 @@ function BuildtimeBuildFinal.enable(flag)
     end
 end
 
-return BuildtimeBuildFinal
+return BuilderBuildFinal

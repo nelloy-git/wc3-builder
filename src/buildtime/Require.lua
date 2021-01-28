@@ -1,8 +1,8 @@
----@type BuildtimeFileUtils
-local BuildtimeFileUtils = require('Buildtime.FileUtils')
+---@type BuilderFile
+local File = require('src.File')
 
----@class BuildtimeRequire
-local BuildtimeRequire = {}
+---@class BuilderRequire
+local BuilderRequire = {}
 local packages
 local src
 
@@ -12,10 +12,10 @@ local function registerFile(package_name)
     local path = package_name:gsub('%.', sep)..'.lua'
 
     if not packages[path] then
-        if not BuildtimeFileUtils.isExist(src..sep..path) then
+        if not File.isExist(src..sep..path) then
             error('Can not find file: '..src..sep..path, 3)
         end
-        packages[path] = BuildtimeFileUtils.readFile(src..sep..path)
+        packages[path] = File.read(src..sep..path)
     end
 end
 
@@ -34,8 +34,8 @@ local function changed_require(package_name)
     local sep = package.config:sub(1,1)
     local file_path = src..sep..package_name:gsub('%.', sep)..'.lua'
     local dir_path = src..sep..package_name:gsub('%.', sep)
-    if not BuildtimeFileUtils.isExist(file_path) and
-           BuildtimeFileUtils.isDir(dir_path) then
+    if not File.isExist(file_path) and
+           File.isDir(dir_path) then
         package_name = package_name..'.index'
     end
 
@@ -48,7 +48,7 @@ local function changed_require(package_name)
 end
 
 ---@return table<string, string>
-function BuildtimeRequire.getPackages()
+function BuilderRequire.getPackages()
     local copy = {}
     for k,v in pairs(packages) do
         copy[k] = v
@@ -57,18 +57,14 @@ function BuildtimeRequire.getPackages()
 end
 
 ---@param flag boolean
----@param src_dir string | nil
-function BuildtimeRequire.enable(flag, src_dir)
-    src = src_dir
-
+function BuilderRequire.enable(flag, lua_src)
     if flag then
         packages = {}
+        src = lua_src
         _G.require = changed_require
-        _G.fake_require = origin_require
     else
         _G.require = origin_require
-        _G.fake_require = nil
     end
 end
 
-return BuildtimeRequire
+return BuilderRequire
