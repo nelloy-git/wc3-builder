@@ -137,7 +137,7 @@ function BuildtimeProcess.build(src, dst, lang)
 
     local lua_src
     if lang == 'ts' then
-        print('Compiling TypeScript')
+        print('Compiling Lua from TypeScript')
         lua_src = dst..sep..'tmp_lua'
         if (not BuildtimeFileUtils.isExist(lua_src)) then
             os.execute('mkdir '..lua_src)

@@ -1,15 +1,21 @@
 local sep = package.config:sub(1,1)
-local this_file_path = debug.getinfo(1, "S").source:sub(2)
-local this_dir_path = this_file_path:sub(1, this_file_path:match('^.*()'..sep))
+local __path__ = debug.getinfo(1, "S").source:sub(2)
+local __dir__ = __path__:sub(1, __path__:match('^.*()'..sep))
 
 -- Add builder dir to packages list
 local package_path = package.path
-package.path = package.path..';'..this_dir_path..sep.."?.lua"
+package.path = package.path..';'..__dir__..sep.."?.lua"
 
-local Process = require('Buildtime.Process')
+---@type BuilderBuild
+local Build = require('src.Build')
+---@type BuilderFile
+local File = require('src.File')
+---@type BuilderJson
+local Json = require('src.Json')
 
-package.path = package_path
+local Config = require('src.Config')
 
--- TODO argparse
+local conf = Config.parse(__dir__..'conf.json')
+if (not conf) then return end
 
-Process.build(arg[1], arg[2], arg[3])
+Build.start(conf)

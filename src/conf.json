@@ -1,0 +1,6 @@
+{
+    "Src": "path_to_sources",
+    "Dst": "path_for_built_files",
+    "Lang": "lua or ts",
+    "Tstl": "if uses TypeScrypt add path tp tstl.js"
+}
