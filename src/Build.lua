@@ -31,10 +31,11 @@ end
 
 ---@param conf BuilderConfig
 function Build.start(conf)
-    local src = conf.Src
-    local dst = conf.Dst
-    local lang = conf.Lang
-    local tstl = conf.Tstl
+    local src = conf["wc3-builder"].Src
+    local dst = conf["wc3-builder"].Dst
+    local lang = conf["wc3-builder"].Lang
+    local tstl = conf["wc3-builder"].Tstl
+    local includes = conf["wc3-builder"].include
 
     print('Building started:\n    Src: '..src..'\n    Dst: '..dst..'\n    Lang: '..lang)
 
@@ -51,9 +52,10 @@ function Build.start(conf)
     File.makeDir(map_dir)
 
     local lua_src = src
-    if (conf.Lang == 'ts') then
+    if (lang == 'ts') then
         lua_src = dst..sep..'tstl_tmp'
         Build.ts2lua(src, lua_src, tstl)
+        Build.copyLua(lua_src)
     end
 
     Build.runBuildtime(lua_src)
@@ -106,6 +108,7 @@ function Build.ts2lua(src, dst, tstl)
     File.makeDir(dst)
 
     os.execute ('node '..tstl..
+                    ' --allowJs'..
                     ' --experimentalDecorators'..
                     ' --rootDir '..src..
                     ' --outDir '..dst)
@@ -153,6 +156,12 @@ function Build.getRuntimeTemplate()
            _buildFinal..'\n\n'..
            _macro..'\n\n'..
            _require..'\n\n'
+end
+
+function Build.copyLua(lua_src)
+    -- print('copy '..GetSrc()..sep..'*.lua '..lua_src..' >nul')
+    os.execute('xcopy '..GetSrc()..sep..'*.lua '..lua_src..' /sy > nul')
+    -- xcopy c:\*.doc k:\mybackup /sy
 end
 
 ---@param out  string

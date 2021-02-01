@@ -11,9 +11,12 @@ local Build = require('src.Build')
 ---@type BuilderConfig
 local Config = require('src.Config')
 
-
 local conf_path = arg[1]
+if (not conf_path) then conf_path = 'tsconfig.json' end
+
 local conf = Config.parse(conf_path)
 if (not conf) then return end
 
 Build.start(conf)
+
+package.path = package_path
