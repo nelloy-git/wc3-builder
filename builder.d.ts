@@ -7,8 +7,9 @@ type BuilderData = BuilderDataTemplate<BuilderAvailableType>
 type BuilderFunc<T extends BuilderData> = (...args: BuilderData[]) => T
 
 declare function IsGame(): boolean;
-declare function GetSrc(): (string|null);
-declare function GetDst(): (string|null);
+declare function GetSrc(): string | null;
+declare function GetDst(): string | null;
+declare function currentPackage(depth: number): string | null
 
 declare function Macro<T extends BuilderData>(val: T) : T;
 declare function Macro<T extends BuilderData>(func: BuilderFunc<T>, ...args: BuilderData[]) : T;

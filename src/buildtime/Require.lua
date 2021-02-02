@@ -4,6 +4,7 @@ local File = require('src.File')
 ---@class BuilderRequire
 local BuilderRequire = {}
 local packages
+local current = {}
 local src
 
 ---@param package_name string
@@ -42,7 +43,9 @@ local function changed_require(package_name)
     registerFile(package_name)
 
     loading_packages[package_name] = true
+    table.insert(current, package_name)
     local res = origin_require(package_name)
+    table.remove(current, #current)
     loading_packages[package_name] = nil
     return res
 end
@@ -62,6 +65,7 @@ function BuilderRequire.enable(flag, lua_src)
         packages = {}
         src = lua_src
         _G.require = changed_require
+        _G.currentPackage = function(depth) return current[#current - (depth or 0)] end
     else
         _G.require = origin_require
     end

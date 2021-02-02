@@ -13,6 +13,7 @@ end
 
 local src_dir
 local dst_dir
+local dst_lua_dir
 
 ---@return string|nil
 function GetSrc()

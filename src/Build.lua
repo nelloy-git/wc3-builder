@@ -31,11 +31,10 @@ end
 
 ---@param conf BuilderConfig
 function Build.start(conf)
-    local src = conf["wc3-builder"].Src
-    local dst = conf["wc3-builder"].Dst
-    local lang = conf["wc3-builder"].Lang
-    local tstl = conf["wc3-builder"].Tstl
-    local includes = conf["wc3-builder"].include
+    local src = conf["compilerOptions"]['rootDir']
+    local dst = conf["compilerOptions"]['outDir']
+    local lang = conf["wc3-builder"].Lang or 'ts'
+    local tstl = conf["wc3-builder"].Tstl or "./node_modules/typescript-to-lua/dist/tstl.js"
 
     print('Building started:\n    Src: '..src..'\n    Dst: '..dst..'\n    Lang: '..lang)
 
@@ -108,7 +107,6 @@ function Build.ts2lua(src, dst, tstl)
     File.makeDir(dst)
 
     os.execute ('node '..tstl..
-                    ' --allowJs'..
                     ' --experimentalDecorators'..
                     ' --rootDir '..src..
                     ' --outDir '..dst)
@@ -159,9 +157,12 @@ function Build.getRuntimeTemplate()
 end
 
 function Build.copyLua(lua_src)
-    -- print('copy '..GetSrc()..sep..'*.lua '..lua_src..' >nul')
-    os.execute('xcopy '..GetSrc()..sep..'*.lua '..lua_src..' /sy > nul')
-    -- xcopy c:\*.doc k:\mybackup /sy
+    if (sep == '/') then
+        -- os.execute('echo \"cd '..GetSrc()..' && find . -name \'*.lua\' -exec cp --parents {} $PWD/'..lua_src..' \';\'\"')
+        os.execute('cd '..GetSrc()..' && find . -name \'*.lua\' -exec cp --parents ./{} ../'..lua_src..' \';\'')
+    else
+        os.execute('xcopy '..GetSrc()..'\\*.lua '..lua_src..' /sy > nul')
+    end
 end
 
 ---@param out  string
