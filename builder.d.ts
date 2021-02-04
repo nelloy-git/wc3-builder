@@ -13,4 +13,4 @@ declare function getLoadingPackage(depth?: number): string | undefined
 
 declare function Macro<T extends BuilderData>(val: T) : T;
 declare function Macro<T extends BuilderData>(func: BuilderFunc<T>, ...args: BuilderData[]) : T;
-declare function BuildFinal<T extends BuilderData>(func: BuilderFunc<T>, ...args: BuilderData[]) : T;
+declare function MacroFinal<T extends BuilderData>(func: BuilderFunc<T>, ...args: BuilderData[]) : T;
