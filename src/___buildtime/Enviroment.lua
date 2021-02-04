@@ -1,7 +1,7 @@
----@type BuildtimeFinal
-local BFinal = require('src.___buildtime.BuildFinal')
 ---@type BuildtimeMacro
 local BMacro = require('src.___buildtime.Macro')
+---@type BuildtimeMacroFinal
+local BMacroFinal = require('src.___buildtime.MacroFinal')
 ---@type BuildtimeRequire
 local BRequire = require('src.___buildtime.Require')
 ---@type BuildtimeUtils
@@ -19,8 +19,8 @@ local package_path
 ---@param map_dst string
 function Env.enable(src, lua_src, dst, map_dst)
     BUtils.enable(src, map_dst)
-    BFinal.enable(lua_src, dst)
     BMacro.enable(lua_src, dst)
+    BMacroFinal.enable(lua_src, dst)
     BRequire.enable(lua_src, dst)
 
     package_path = package.path
@@ -31,8 +31,8 @@ function Env.disable()
     package.path = package_path
 
     BRequire.disable()
-    BFinal.disable()
     BMacro.disable()
+    BMacroFinal.disable()
     BUtils.disable()
 end
 
@@ -40,6 +40,7 @@ end
 function Env.getUsedFiles()
     local used = BRequire.getPackages()
     BMacro.replace(used)
+    BMacroFinal.replace(used)
     return used
 end
 

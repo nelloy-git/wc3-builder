@@ -130,13 +130,13 @@ end
 function Build.getRuntimeTemplate()
     local _utils = File.read(__dir__..sep..'___runtime'..sep..'Utils.lua')
     local _main = File.read(__dir__..sep..'___runtime'..sep..'Main.lua')
-    local _buildFinal = File.read(__dir__..sep..'___runtime'..sep..'BuildFinal.lua')
+    local _macroFinal = File.read(__dir__..sep..'___runtime'..sep..'MacroFinal.lua')
     local _macro = File.read(__dir__..sep..'___runtime'..sep..'Macro.lua')
     local _require = File.read(__dir__..sep..'___runtime'..sep..'Require.lua')
 
     return _utils..'\n\n'..
            _main..'\n\n'..
-           _buildFinal..'\n\n'..
+           _macroFinal..'\n\n'..
            _macro..'\n\n'..
            _require..'\n\n'
 end
