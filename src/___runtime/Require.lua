@@ -27,5 +27,7 @@ do
         return loaded_packages[package_name]
     end
 
-    _G.currentPackage = function(depth) return current[#current - (depth or 0)] end
+    _G.getLoadingPackage = function(depth)
+        error('getLoadingPackage function is disabled in runtime', 2)
+    end
 end

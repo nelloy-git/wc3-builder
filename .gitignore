@@ -1,8 +1,1 @@
-/.vscode
-/__pycache__
-/build
-/dist
-/conf.json
-/path_to_sources
-/path_for_built_files
-lua-wc3.spec
+/test

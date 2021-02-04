@@ -2,11 +2,12 @@
 local File = require('src.File')
 
 ---@class BuildtimeMacro
-local BuilderMacro = {}
+local BuildtimeMacro = {}
 
 local inside_macro = false
 local macro_list
-local src = GetSrc()
+local src_dir
+local dst_dir
 
 ---@param str string
 ---@param line number
@@ -37,9 +38,13 @@ end
 ---@param line number
 ---@param result nil | boolean | number | string | table
 local function registerMacro(path, line, result)
+    if (not src_dir) then
+        error('Macro function can not be called after building ends.', 3)
+    end
+
     ---@class BuilderMacroData
     local macro_data = {
-        path = path:sub(src:len() + 2),
+        path = path:sub(src_dir:len() + 2),
         origin = findMarco(path, line),
         result = result
     }
@@ -80,7 +85,7 @@ local function macroFunc(body, ...)
     -- Get result
     local res = (type(body) == 'function') and body(...) or body
     if not isResultValid(res) then
-        error('BuildtimeMacro: got wrong type.', 2)
+        error('Macro: got unavailable result type.', 2)
     end
 
     local info = debug.getinfo(2, 'lSn')
@@ -91,15 +96,6 @@ local function macroFunc(body, ...)
     inside_macro = false
 
     return res
-end
-
----@return table<integer, BuilderMacroData>
-function BuilderMacro.getMacroList()
-    local copy = {}
-    for k,v in pairs(macro_list) do
-        copy[k] = v
-    end
-    return copy
 end
 
 ---@param data nil | boolean | number | string | table
@@ -138,8 +134,9 @@ local function toString(data, log)
     end
 end
 
+--- Search found Macros in list of files and replaces them.
 ---@param files table<string, string> @format: <path, context>
-function BuilderMacro.replace(files)
+function BuildtimeMacro.replace(files)
     for i = 1, #macro_list do
         local macro_data = macro_list[i]
         local path = macro_data.path
@@ -159,17 +156,22 @@ function BuilderMacro.replace(files)
     end
 end
 
----@param flag boolean
----@param src_dir string
-function BuilderMacro.enable(flag, src_dir)
-    src = src_dir
+---@param src string
+---@param dst string
+function BuildtimeMacro.enable(src, dst)
+    inside_macro = false
+    macro_list = {}
+    src_dir = src
+    dst_dir = dst
 
-    if flag then
-        macro_list = {}
-        _G.Macro = macroFunc
-    else
-        _G.Macro = nil
-    end
+    _G.Macro = macroFunc
 end
 
-return BuilderMacro
+function BuildtimeMacro.disable()
+    src_dir = nil
+    dst_dir = nil
+
+    _G.Macro = nil
+end
+
+return BuildtimeMacro

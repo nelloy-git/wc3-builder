@@ -1,9 +1,5 @@
 require('src.Utils')
 
-if (IsGame()) then
-    return {}
-end
-
 ---@class BuilderFile
 local File = {}
 local sep = package.config:sub(1,1)

@@ -1,27 +1,18 @@
-local Utils = require('src.Utils')
-
-if (IsGame()) then
-    return {}
-end
-
+---@type BuildtimeEnv
+local BuildtimeEnv = require('src.___buildtime.Enviroment')
 ---@type BuilderFile
 local File = require('src.File')
-
----@type BuilderBuildFinal
-local BuilderFinal = require('src.buildtime.BuildFinal')
----@type BuilderMacro
-local BuiderMacro = require('src.buildtime.Macro')
----@type BuilderRequire
-local BuilderRequire = require('src.buildtime.Require')
+---@type BuilderUtils
+local Utils = require('src.Utils')
 
 local sep = package.config:sub(1,1)
 
 ---@class BuilderBuild
 local Build = {}
 
-Build.__path__ = debug.getinfo(1, "S").source:sub(2)
-Build.__dir__ = File.getFileDir(Build.__path__)
-Build.__MAP_SUBDIR__ = 'map'
+local __path__ = debug.getinfo(1, "S").source:sub(2)
+local __dir__ = File.getFileDir(__path__)
+local __map_subdir__ = 'map'
 
 Build.package_template = [[
 __required_packages['%s'] = function()
@@ -33,36 +24,23 @@ end
 function Build.start(conf)
     local src = conf["compilerOptions"]['rootDir']
     local dst = conf["compilerOptions"]['outDir']
-    local lang = conf["wc3-builder"].Lang or 'ts'
-    local tstl = conf["wc3-builder"].Tstl or "./node_modules/typescript-to-lua/dist/tstl.js"
+    local lang = conf["wc3-builder"]['lang']
+    local tstl = conf["wc3-builder"]['tstl']
 
     print('Building started:\n    Src: '..src..'\n    Dst: '..dst..'\n    Lang: '..lang)
 
-    Build.initUtils(src, dst)
+    local dst_map = dst..sep..__map_subdir__
+    Build.createDirs(dst, dst_map)
 
-    if (not File.isDir(dst)) then
-        File.makeDir(dst)
-    end
-
-    local map_dir = dst..sep..Build.__MAP_SUBDIR__
-    if (File.isDir(map_dir)) then
-        File.removeDir(map_dir)
-    end
-    File.makeDir(map_dir)
-
+    -- Transpile TypeScrypt to lua if nessesary
     local lua_src = src
     if (lang == 'ts') then
         lua_src = dst..sep..'tstl_tmp'
         Build.ts2lua(src, lua_src, tstl)
-        Build.copyLua(lua_src)
+        Build.copyLua(src, lua_src)
     end
 
-    Build.runBuildtime(lua_src)
-
-    -- Get list of used files
-    local used = BuilderRequire.getPackages()
-    -- Replace macros in used packages
-    BuiderMacro.replace(used)
+    local used = Build.runBuildtime(src, lua_src, dst, dst_map)
 
     -- Generate output file.
     local out = Build.getRuntimeTemplate()
@@ -77,22 +55,23 @@ function Build.start(conf)
     Build.optimize(out)
 
     -- Save to map_dir
-    local out_path = map_dir..sep..'war3map.lua'
+    local out_path = dst_map..sep..'war3map.lua'
     File.write(out, out_path)
 
     print('Building finished.')
 end
 
----@param src string
 ---@param dst string
-function Build.initUtils(src, dst)
-    dst = dst..sep..Build.__MAP_SUBDIR__
+---@param dst_map string
+function Build.createDirs(dst, dst_map)
+    if (not File.isDir(dst)) then
+        File.makeDir(dst)
+    end
 
-    if (src:sub(#src) == sep) then src = src:sub(1, #src - 1) end
-    if (dst:sub(#dst) == sep) then dst = dst:sub(1, #dst - 1) end
-
-    Utils.SetSrc(src)
-    Utils.SetDst(dst)
+    if (File.isDir(dst_map)) then
+        File.removeDir(dst_map)
+    end
+    File.makeDir(dst_map)
 end
 
 ---@param src string
@@ -114,40 +93,46 @@ function Build.ts2lua(src, dst, tstl)
     print('Building Lua from TypeScript done.\n')
 end
 
+---@param src string
 ---@param lua_src string
-function Build.runBuildtime(lua_src)
-    print('Executing buildtime scripts ...')
-
-    Build.enableAPI(true, lua_src)
-    -- Start user's script
-    local package_path = package.path
-    package.path = lua_src..sep.."?.lua"
-    require('config')
-    require('main')
-    package.path = package_path
-    -- Finished
-    Build.enableAPI(false)
-
-    print('Executing buildtime scripts done.')
+function Build.copyLua(src, lua_src)
+    if (sep == '/') then
+        os.execute('cd '..src..' && find . -name \'*.lua\' -exec cp --parents ./{} ../'..lua_src..' \';\'')
+    else
+        os.execute('xcopy '..src..'\\*.lua '..lua_src..' /sy > nul')
+    end
 end
 
----@param flag boolean
+---@param src string
 ---@param lua_src string
-function Build.enableAPI(flag, lua_src)
-    BuilderFinal.enable(flag)
-    BuilderRequire.enable(flag, lua_src)
-    BuiderMacro.enable(flag, lua_src)
+---@param dst string
+---@param map_dst string
+---@return table<string, string>
+function Build.runBuildtime(src, lua_src, dst, map_dst)
+    print('Executing buildtime scripts ...')
+
+    BuildtimeEnv.enable(src, lua_src, dst, map_dst)
+
+    -- Start user's script
+    require('config')
+    require('main')
+
+    local used = BuildtimeEnv.getUsedFiles()
+
+    BuildtimeEnv.disable()
+
+    print('Executing buildtime scripts done.')
+
+    return used
 end
 
 ---@return string
 function Build.getRuntimeTemplate()
-    local dir = Build.__dir__
-
-    local _utils = File.read(dir..sep..'runtime'..sep..'Utils.lua')
-    local _main = File.read(dir..sep..'runtime'..sep..'Main.lua')
-    local _buildFinal = File.read(dir..sep..'runtime'..sep..'BuildFinal.lua')
-    local _macro = File.read(dir..sep..'runtime'..sep..'Macro.lua')
-    local _require = File.read(dir..sep..'runtime'..sep..'Require.lua')
+    local _utils = File.read(__dir__..sep..'___runtime'..sep..'Utils.lua')
+    local _main = File.read(__dir__..sep..'___runtime'..sep..'Main.lua')
+    local _buildFinal = File.read(__dir__..sep..'___runtime'..sep..'BuildFinal.lua')
+    local _macro = File.read(__dir__..sep..'___runtime'..sep..'Macro.lua')
+    local _require = File.read(__dir__..sep..'___runtime'..sep..'Require.lua')
 
     return _utils..'\n\n'..
            _main..'\n\n'..
@@ -156,16 +141,7 @@ function Build.getRuntimeTemplate()
            _require..'\n\n'
 end
 
-function Build.copyLua(lua_src)
-    if (sep == '/') then
-        -- os.execute('echo \"cd '..GetSrc()..' && find . -name \'*.lua\' -exec cp --parents {} $PWD/'..lua_src..' \';\'\"')
-        os.execute('cd '..GetSrc()..' && find . -name \'*.lua\' -exec cp --parents ./{} ../'..lua_src..' \';\'')
-    else
-        os.execute('xcopy '..GetSrc()..'\\*.lua '..lua_src..' /sy > nul')
-    end
-end
-
----@param out  string
+---@param out string
 function Build.optimize(out)
     out = out:gsub('--%[%b[]%]', '')
     out = out:gsub('%-%-[^\n]*', '')
