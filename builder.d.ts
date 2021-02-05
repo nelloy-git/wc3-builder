@@ -1,6 +1,6 @@
 /** @noSelfInFile */
 
-type BuilderAvailableType = void|string|number
+type BuilderAvailableType = undefined|void|string|number
 type BuilderDataTemplate<T extends BuilderAvailableType> = T | Array<BuilderDataTemplate<T>>;
 type BuilderData = BuilderDataTemplate<BuilderAvailableType>
 

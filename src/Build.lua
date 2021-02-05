@@ -26,6 +26,7 @@ function Build.start(conf)
     local dst = conf["compilerOptions"]['outDir']
     local lang = conf["wc3-builder"]['lang']
     local tstl = conf["wc3-builder"]['tstl']
+    local traceback = conf["wc3-builder"]['traceback']
 
     print('Building started:\n    Src: '..src..'\n    Dst: '..dst..'\n    Lang: '..lang)
 
@@ -40,7 +41,8 @@ function Build.start(conf)
         Build.copyLua(src, lua_src)
     end
 
-    local used = Build.runBuildtime(src, lua_src, dst, dst_map)
+    local used = Build.runBuildtime(src, lua_src, dst, dst_map, traceback)
+    if (not used) then return end
 
     -- Generate output file.
     local out = Build.getRuntimeTemplate()
@@ -78,7 +80,7 @@ end
 ---@param dst string
 ---@param tstl string
 function Build.ts2lua(src, dst, tstl)
-    print('Building Lua from TypeScript ...')
+    print('Building Lua from TypeScript ...\n')
 
     if (File.isDir(dst)) then
         File.removeDir(dst)
@@ -107,21 +109,37 @@ end
 ---@param lua_src string
 ---@param dst string
 ---@param map_dst string
+---@param traceback boolean
 ---@return table<string, string>
-function Build.runBuildtime(src, lua_src, dst, map_dst)
-    print('Executing buildtime scripts ...')
+function Build.runBuildtime(src, lua_src, dst, map_dst, traceback)
+    print('Executing buildtime scripts ...\n')
 
     BuildtimeEnv.enable(src, lua_src, dst, map_dst)
 
     -- Start user's script
-    require('config')
-    require('main')
+    local success, res
+    success, res = pcall(require, 'config')
+    if (not success) then
+        print('Caught error during execution.')
+        if (traceback) then print(res) end
+        return
+    end
+
+    success, res = pcall(require, 'main')
+    if (not success) then
+        print('Caught error during execution.')
+        if (traceback) then print(res) end
+        return
+    end
+
+    -- require('config')
+    -- require('main')
 
     local used = BuildtimeEnv.getUsedFiles()
 
     BuildtimeEnv.disable()
 
-    print('Executing buildtime scripts done.')
+    print('Executing buildtime scripts done.\n')
 
     return used
 end

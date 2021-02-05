@@ -26,8 +26,9 @@ function Config.parse(conf_path)
     json["compilerOptions"]['outDir'] = json["compilerOptions"]['outDir'] or 'dst'
 
     json["wc3-builder"] = json["wc3-builder"] or {}
-    json["wc3-builder"]['lang'] = json["wc3-builder"].lang or 'lua'
-    json["wc3-builder"]['tstl'] = json["wc3-builder"].tstl or "./node_modules/typescript-to-lua/dist/tstl.js"
+    json["wc3-builder"]['lang'] = json["wc3-builder"]['lang'] or 'lua'
+    json["wc3-builder"]['tstl'] = json["wc3-builder"]['tstl'] or "./node_modules/typescript-to-lua/dist/tstl.js"
+    json["wc3-builder"]['traceback'] = json["wc3-builder"]['traceback'] or true
 
     return json
 end
