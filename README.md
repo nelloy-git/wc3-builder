@@ -49,4 +49,4 @@ Macro(body, ...)
 
 Adds function to list which is going be executed at the end of the building.
 In runtime it works like fun(...)
-BuildFinal(func, ...)
+MacroFinal(func, ...)
