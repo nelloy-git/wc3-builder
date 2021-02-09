@@ -2,9 +2,7 @@
 Lua builder for warcraf3
 
 How to use:
-lua53.exe main.lua src dst
-  src - source dir
-  dst - result dir
+lua53.exe main.lua
 
 Builder will run config.lua and main.lua files in src folder. It does not recognize wc3 API.
 There are some extra global functions available:
