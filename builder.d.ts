@@ -1,16 +1,15 @@
 /** @noSelfInFile */
 
-type BuilderAvailableType = undefined|void|string|number
-type BuilderDataTemplate<T extends BuilderAvailableType> = T | Array<BuilderDataTemplate<T>>;
-type BuilderData = BuilderDataTemplate<BuilderAvailableType>
+type LuaTable = {[key: string]: undefined | void | number | string | LuaTable}
+type BuildtimeData = undefined | void | number | string | LuaTable
 
-type BuilderFunc<T extends BuilderData> = (...args: BuilderData[]) => T
+type BuilderFunc<T extends BuildtimeData> = (...args: BuildtimeData[]) => T
 
 declare function IsGame(): boolean;
 declare function GetSrc(): string | undefined;
 declare function GetDst(): string | undefined;
 declare function getLoadingPackage(depth?: number): string | undefined
 
-declare function Macro<T extends BuilderData>(val: T) : T;
-declare function Macro<T extends BuilderData>(func: BuilderFunc<T>, ...args: BuilderData[]) : T;
-declare function MacroFinal<T extends BuilderData>(func: BuilderFunc<T>, ...args: BuilderData[]) : T;
+declare function Macro<T extends BuildtimeData>(val: T) : T;
+declare function Macro<T extends BuildtimeData>(func: BuilderFunc<T>, ...args: BuildtimeData[]) : T;
+declare function MacroFinal<T extends BuildtimeData>(func: BuilderFunc<T>, ...args: BuildtimeData[]) : T;
