@@ -107,6 +107,7 @@ local function toString(data, log)
             error('BuilderMacro: can not return string \'nil\'', log or 4)
         end
 
+        data = data:gsub('\"', '\\\"')
         data = data:gsub('\'', '\\\'')
         data = data:gsub('\\', '\\\\')
         data = data:gsub('%%', '%%%%')
