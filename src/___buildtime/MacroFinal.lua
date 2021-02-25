@@ -95,6 +95,24 @@ local function macroFunc(func, ...)
     registerMacro(path, line, func, {...})
 end
 
+local escape_char_map = {
+  [ "\\" ] = "\\",
+  [ "\"" ] = "\"",
+  [ "\b" ] = "b",
+  [ "\f" ] = "f",
+  [ "\n" ] = "n",
+  [ "\r" ] = "r",
+  [ "\t" ] = "t",
+}
+
+local function escape_char(c)
+    return "\\" .. (escape_char_map[c] or string.format("u%04x", c:byte()))
+end
+
+local function encode_string(val)
+    return '"' .. val:gsub('[%z\1-\31\\"]', escape_char) .. '"'
+end
+
 ---@param data nil | boolean | number | string | table
 ---@param log integer
 local function toString(data, log)
@@ -103,11 +121,7 @@ local function toString(data, log)
         if data == 'nil' then
             error('BuilderMacro: can not return string \'nil\'', log or 4)
         end
-
-        data = data:gsub('\'', '\\\'')
-        data = data:gsub('\\', '\\\\')
-        data = data:gsub('%%', '%%%%')
-        return '\''..data:gsub('\n', '\\n\'..\n\'')..'\''
+        return encode_string(data)
     elseif t == 'number' then
         return tostring(data)
     elseif t == 'nil' then
