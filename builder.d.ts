@@ -1,9 +1,9 @@
 /** @noSelfInFile */
 
-type LuaHash = {[key: string]: undefined | void | number | string | LuaTable}
-type LuaArray = {[key: number]: undefined | void | number | string | LuaTable}
+type LuaHash = {[key: string]: undefined | void | boolean | number | string | LuaTable}
+type LuaArray = {[key: number]: undefined | void | boolean | number | string | LuaTable}
 type LuaTable = (LuaHash & LuaArray) | LuaHash | LuaArray
-type BuildtimeData = undefined | void | number | string | LuaTable
+type BuildtimeData = undefined | void | boolean | number | string | LuaTable
 
 type BuilderFunc<T extends BuildtimeData> = (...args: BuildtimeData[]) => T
 

@@ -118,14 +118,14 @@ function Build.runBuildtime(src, lua_src, dst, map_dst, traceback)
 
     -- Start user's script
     local success, res
-    success, res = xpcall(require, function(err) print(err) end, 'config')
+    success, res = pcall(require, 'config')
     if (not success) then
         print('Caught error during execution.')
         if (traceback) then print(res) end
         return
     end
 
-    success, res = xpcall(require, function(err) print(err) end, 'main')
+    success, res = pcall(require, 'main')
     if (not success) then
         print('Caught error during execution.')
         if (traceback) then print(res) end
