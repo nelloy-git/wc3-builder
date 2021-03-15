@@ -30,9 +30,11 @@ local function changed_require(package_name)
     end
 
     if loading_packages[package_name] then
-        for i = 0, #current - 1 do
+        print('=====================')
+        for i = 1, #current do
             print(current[i])
         end
+        print('=====================')
         error('recursive require detected.', 2)
     end
 
