@@ -1,11 +1,8 @@
 /** @noSelfInFile */
 
-type LuaHash = {[key: string]: undefined | void | boolean | number | string | LuaTable}
-type LuaArray = {[key: number]: undefined | void | boolean | number | string | LuaTable}
-type LuaTable = (LuaHash & LuaArray) | LuaHash | LuaArray
-type BuildtimeData = undefined | void | boolean | number | string | LuaTable
-
-type BuilderFunc<T extends BuildtimeData> = (...args: BuildtimeData[]) => T
+type BuildtimeTable = LuaTable<number | string, BuildtimeData>
+type BuildtimeData = undefined | boolean | number | string | BuildtimeTable
+type BuilderFunc<T extends BuildtimeData> = (...args: BuildtimeData[]) => T | void
 
 declare function IsGame(): boolean;
 declare function GetSrc(): string | undefined;
