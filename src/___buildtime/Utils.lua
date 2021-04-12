@@ -19,6 +19,24 @@ local function _GetDst()
     return dst_dir
 end
 
+---@return string
+local function _getFilePath()
+    local cur = getLoadingPackage() ---@type string
+
+    if (not cur) then
+        return error('Can not get loading package.')
+    end
+
+    return _GetSrc() + '/' + cur:gsub('%.', '/') + '.lua'
+end
+
+---@return string
+local function _getFileDir()
+    local file_path = _getFilePath()
+    local last = file_path:find("/[^/]*$")
+    return file_path:sub(1, last)
+end
+
 ---@param src string
 ---@param dst string
 function Utils.enable(src, dst)
@@ -28,6 +46,8 @@ function Utils.enable(src, dst)
     _G.IsGame = _IsGame
     _G.GetSrc = _GetSrc
     _G.GetDst = _GetDst
+    _G.getFilePath = _getFilePath
+    _G.getFileDir = _getFileDir
 end
 
 function Utils.disable()
@@ -37,6 +57,8 @@ function Utils.disable()
     _G.IsGame = nil
     _G.GetSrc = nil
     _G.GetDst = nil
+    _G.getFilePath = nil
+    _G.getFileDir = nil
 end
 
 return Utils

@@ -4926,7 +4926,7 @@ declare function BlzFrameSetSize(frame: jframehandle, width: number, height: num
 declare function BlzFrameSetVertexColor(frame: jframehandle, color: number): void
 declare function BlzFrameSetLevel(frame: jframehandle, level: number): void
 declare function BlzFrameSetParent(frame: jframehandle, parent?: jframehandle): void
-declare function BlzFrameGetParent(frame: jframehandle): jframehandle | null
+declare function BlzFrameGetParent(frame: jframehandle): jframehandle | undefined
 declare function BlzFrameGetHeight(frame: jframehandle): number
 declare function BlzFrameGetWidth(frame: jframehandle): number
 declare function BlzFrameGetChild(frame: jframehandle, i: number): jframehandle|void
