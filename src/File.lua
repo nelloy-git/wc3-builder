@@ -19,6 +19,9 @@ end
 ---@return string
 function File.read(path)
     local f = io.open(path)
+    if (not f) then
+        error('Can not open file '..path)
+    end
     local str = f:read("*a")
     f:close()
     return str
@@ -28,6 +31,9 @@ end
 ---@param path string
 function File.write(data, path)
     local f = io.open(path, "w")
+    if (not f) then
+        error('Can not open file '..path)
+    end
     f:write(data)
     f:close()
 end
@@ -36,6 +42,9 @@ end
 ---@param path string
 function File.append(data, path)
     local f = io.open(path, "a+")
+    if (not f) then
+        error('Can not open file '..path)
+    end
     f:write(data)
     f:close()
 end
@@ -68,6 +77,11 @@ function File.isDir(path)
     return File.isExist(path..sep)
 end
 
+function File.scanDir(dir)
+    local p = io.popen('dir /s /b /o "'..dir..'"')  --Open directory look for files, save data in p. By giving '-type f' as parameter, it returns all files.     
+    return p:lines()
+ end
+
 ---@param path string
 ---@return boolean
 function File.removeDir(path)
@@ -81,12 +95,23 @@ function File.removeDir(path)
         os.execute('rm -r '..path)
     elseif sep == '\\' then
         -- Windows
-        os.execute('rmdir /Q /S '..path)
+        if (File.isDir(path)) then
+            local files = File.scanDir(path)
+            for file in files do
+                os.remove(file)
+            end
+        end
+
+        os.remove(path)
     end
     return true
 end
 
 function File.makeDir(path)
+    if (File.isDir(path)) then
+        return
+    end
+
     -- Clear dst dir.
     if sep == '/' then
         -- Linux

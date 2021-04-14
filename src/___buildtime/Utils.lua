@@ -27,7 +27,7 @@ local function _getFilePath()
         return error('Can not get loading package.')
     end
 
-    return _GetSrc() + '/' + cur:gsub('%.', '/') + '.lua'
+    return _GetSrc()..'/'..cur:gsub('%.', '/')..'.lua'
 end
 
 ---@return string

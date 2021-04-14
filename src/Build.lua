@@ -101,7 +101,10 @@ function Build.copyLua(src, lua_src)
     if (sep == '/') then
         os.execute('cd '..src..' && find . -name \'*.lua\' -exec cp --parents ./{} ../'..lua_src..' \';\'')
     else
-        os.execute('xcopy '..src..'\\*.lua '..lua_src..' /sy > nul')
+        src = src:gsub('%/', '\\')
+        lua_src = lua_src:gsub('%/', '\\')
+
+        os.execute('xcopy "'..src..'\\*.lua" "'..lua_src..'" /s /y > nul')
     end
 end
 
