@@ -1,6 +1,8 @@
 ---@class BuildtimeUtils
 local Utils = {}
 
+local sep = package.config:sub(1, 1)
+
 local src_dir
 local dst_dir
 
@@ -40,8 +42,8 @@ end
 ---@param src string
 ---@param dst string
 function Utils.enable(src, dst)
-    src_dir = src
-    dst_dir = dst
+    src_dir = src:gsub('/', sep):gsub('\\', sep)
+    dst_dir = dst:gsub('/', sep):gsub('\\', sep)
 
     _G.IsGame = _IsGame
     _G.GetSrc = _GetSrc
