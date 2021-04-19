@@ -12,7 +12,7 @@ local Build = {}
 
 local __path__ = debug.getinfo(1, "S").source:sub(2)
 local __dir__ = File.getFileDir(__path__)
-local __map_subdir__ = 'map'
+local __map_subdir__ = 'map.w3x'
 
 Build.package_template = [[
 __required_packages['%s'] = function()
@@ -61,6 +61,18 @@ function Build.start(conf)
     File.write(out, out_path)
 
     print('Building finished.')
+
+    if (sep == '\\') then
+        print('Preparing .w3x')
+        local mpq = __dir__..sep..'..'..sep..'MPQEditor.exe'
+        local w3x = dst_map..sep..'..'..sep..'output.w3x'
+
+        os.remove(w3x)
+        os.execute(mpq..' new '..w3x)
+        os.execute(mpq..' add '..w3x..' '..dst_map..' /r')
+
+        print('Done')
+    end
 end
 
 ---@param dst string

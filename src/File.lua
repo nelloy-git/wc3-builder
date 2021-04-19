@@ -79,7 +79,11 @@ end
 
 function File.scanDir(dir)
     local p = io.popen('dir /s /b /o "'..dir..'"')  --Open directory look for files, save data in p. By giving '-type f' as parameter, it returns all files.     
-    return p:lines()
+    local list = {}
+    for l in p:lines() do
+        list[#list+1] = l
+    end
+    return list
  end
 
 ---@param path string
@@ -97,8 +101,8 @@ function File.removeDir(path)
         -- Windows
         if (File.isDir(path)) then
             local files = File.scanDir(path)
-            for file in files do
-                os.remove(file)
+            for i = 1, #files do
+                os.remove(files[i])
             end
         end
 
