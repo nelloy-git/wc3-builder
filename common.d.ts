@@ -2505,14 +2505,14 @@ declare function GetWinningPlayer(): jplayer
 declare function TriggerRegisterEnterRegion(
     whichTrigger: jtrigger,
     whichRegion: jregion,
-    filter: jboolexpr
+    filter?: jboolexpr
 ): jevent
 declare function GetTriggeringRegion(): jregion
 declare function GetEnteringUnit(): junit
 declare function TriggerRegisterLeaveRegion(
     whichTrigger: jtrigger,
     whichRegion: jregion,
-    filter: jboolexpr
+    filter?: jboolexpr
 ): jevent
 declare function GetLeavingUnit(): junit
 declare function TriggerRegisterTrackableHitEvent(whichTrigger: jtrigger, t: jtrackable): jevent
@@ -2645,7 +2645,7 @@ declare function TriggerRegisterUnitInRange(
     whichTrigger: jtrigger,
     whichUnit: junit,
     range: number,
-    filter: jboolexpr
+    filter?: jboolexpr
 ): jevent
 declare function TriggerAddCondition(
     whichTrigger: jtrigger,
